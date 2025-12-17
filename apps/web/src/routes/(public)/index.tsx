@@ -1,11 +1,20 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
+import { useBalance } from 'wagmi';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { Star } from 'lucide-react';
+
+const ACC_ADDRESS = '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266';
 
 export const Route = createFileRoute('/(public)/')({
   component: RouteComponent,
 });
 
 function RouteComponent() {
+  const balance = useBalance({
+    address: ACC_ADDRESS,
+  });
+
+  console.log('balance', balance.data);
   return (
     <div className='min-h-screen'>
       {/* Hero Section */}
@@ -162,6 +171,7 @@ function RouteComponent() {
         <button className='px-8 py-4 text-lg font-semibold bg-primary text-primary-foreground rounded-lg'>
           Connect Wallet
         </button>
+        <ConnectButton />
       </section>
     </div>
   );

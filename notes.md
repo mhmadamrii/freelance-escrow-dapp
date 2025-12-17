@@ -21,3 +21,16 @@
 ## Freelancer address
 
 - 0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2
+
+## Hardhat Ignition 🚀
+
+Deploying [ FreelanceEscrowModule ]
+
+Batch #1 Executed FreelanceEscrowModule#FreelanceEscrow
+
+[ FreelanceEscrowModule ] successfully deployed 🚀
+
+Deployed Addresses
+
+FreelanceEscrowModule#FreelanceEscrow -
+0x5FbDB2315678afecb367f032d93F642f64180aa3

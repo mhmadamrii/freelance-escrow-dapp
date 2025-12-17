@@ -1,6 +1,15 @@
-import { Toaster } from '@/components/ui/sonner';
+import Header from '../components/header';
+import appCss from '../index.css?url';
 
+import { Toaster } from '@/components/ui/sonner';
+import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
+import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+
+import type { QueryClient } from '@tanstack/react-query';
+import type { TRPCOptionsProxy } from '@trpc/tanstack-react-query';
+import type { AppRouter } from '@onwork/api/routers/index';
+import '@rainbow-me/rainbowkit/styles.css';
 
 import {
   HeadContent,
@@ -8,15 +17,7 @@ import {
   Scripts,
   createRootRouteWithContext,
 } from '@tanstack/react-router';
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
-import Header from '../components/header';
-import appCss from '../index.css?url';
-import type { QueryClient } from '@tanstack/react-query';
 
-import type { TRPCOptionsProxy } from '@trpc/tanstack-react-query';
-import type { AppRouter } from '@onwork/api/routers/index';
-import { WagmiProvider } from 'wagmi';
-import { config } from '@/configs/wagmi';
 export interface RouterAppContext {
   trpc: TRPCOptionsProxy<AppRouter>;
   queryClient: QueryClient;
@@ -56,7 +57,9 @@ function RootDocument() {
       <body>
         <div className='grid h-svh grid-rows-[auto_1fr]'>
           <Header />
-          <Outlet />
+          <RainbowKitProvider>
+            <Outlet />
+          </RainbowKitProvider>
         </div>
         <Toaster richColors />
         <TanStackRouterDevtools position='bottom-left' />
