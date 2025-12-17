@@ -12,6 +12,8 @@ import { createTRPCOptionsProxy } from '@trpc/tanstack-react-query';
 import { toast } from 'sonner';
 import type { AppRouter } from '@onwork/api/routers/index';
 import { TRPCProvider } from './utils/trpc';
+import { WagmiProvider } from 'wagmi';
+import { config } from './configs/wagmi';
 
 export const queryClient = new QueryClient({
   queryCache: new QueryCache({
@@ -49,11 +51,13 @@ export const getRouter = () => {
     defaultPendingComponent: () => <Loader />,
     defaultNotFoundComponent: () => <div>Not Found</div>,
     Wrap: ({ children }) => (
-      <QueryClientProvider client={queryClient}>
-        <TRPCProvider trpcClient={trpcClient} queryClient={queryClient}>
-          {children}
-        </TRPCProvider>
-      </QueryClientProvider>
+      <WagmiProvider config={config}>
+        <QueryClientProvider client={queryClient}>
+          <TRPCProvider trpcClient={trpcClient} queryClient={queryClient}>
+            {children}
+          </TRPCProvider>
+        </QueryClientProvider>
+      </WagmiProvider>
     ),
   });
   return router;

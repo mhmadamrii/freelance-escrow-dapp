@@ -15,6 +15,8 @@ import type { QueryClient } from '@tanstack/react-query';
 
 import type { TRPCOptionsProxy } from '@trpc/tanstack-react-query';
 import type { AppRouter } from '@onwork/api/routers/index';
+import { WagmiProvider } from 'wagmi';
+import { config } from '@/configs/wagmi';
 export interface RouterAppContext {
   trpc: TRPCOptionsProxy<AppRouter>;
   queryClient: QueryClient;
