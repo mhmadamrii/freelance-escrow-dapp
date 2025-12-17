@@ -1,10 +1,169 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../generated"
+  provider     = "prisma-client"
+  output       = "../generated"
   moduleFormat = "esm"
-  runtime = "bun"
+  runtime      = "bun"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+enum UserRole {
+  CLIENT
+  FREELANCER
+  BOTH
+}
+
+enum JobStatus {
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  DISPUTED
+}
+
+enum ProposalStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum MilestoneStatus {
+  PENDING
+  IN_PROGRESS
+  SUBMITTED
+  APPROVED
+  PAID
+  DISPUTED
+}
+
+model User {
+  id            String   @id @default(uuid())
+  walletAddress String   @unique
+  role          UserRole @default(BOTH)
+
+  // Profile info
+  username  String?  @unique
+  bio       String?
+  skills    String[]
+  portfolio String[] // URLs or IPFS hashes
+  avatarUrl String?
+
+  // Relations
+  postedJobs       Job[]      @relation("ClientJobs")
+  workedJobs       Job[]      @relation("FreelancerJobs")
+  proposals        Proposal[]
+  reviewsGiven     Review[]   @relation("Reviewer")
+  reviewsReceived  Review[]   @relation("Reviewee")
+  sentMessages     Message[]  @relation("Sender")
+  receivedMessages Message[]  @relation("Receiver")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Job {
+  id           String   @id @default(uuid())
+  title        String
+  description  String
+  requirements String?
+  budget       Decimal? @db.Decimal(18, 2)
+
+  // On-chain link
+  onChainId    String? // ID from smart contract
+  tokenAddress String? // 0x0 for ETH or Contract Address
+  tokenSymbol  String? // ETH, USDC, etc.
+  arbiter      String? // Wallet address of arbiter
+
+  status JobStatus @default(OPEN)
+
+  // Relations
+  clientId String
+  client   User   @relation("ClientJobs", fields: [clientId], references: [id])
+
+  freelancerId String?
+  freelancer   User?   @relation("FreelancerJobs", fields: [freelancerId], references: [id])
+
+  proposals  Proposal[]
+  milestones Milestone[]
+  reviews    Review[]
+  messages   Message[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Proposal {
+  id          String   @id @default(uuid())
+  coverLetter String
+  quote       Decimal  @db.Decimal(18, 2)
+  timeline    String?
+  attachments String[] // URLs or IPFS hashes
+
+  status ProposalStatus @default(PENDING)
+
+  // Relations
+  jobId String
+  job   Job    @relation(fields: [jobId], references: [id])
+
+  freelancerId String
+  freelancer   User   @relation(fields: [freelancerId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Milestone {
+  id          String  @id @default(uuid())
+  title       String
+  description String?
+  amount      Decimal @db.Decimal(18, 2)
+
+  status MilestoneStatus @default(PENDING)
+
+  // Proof of work
+  submissionProof String? // IPFS hash or link
+
+  // Relations
+  jobId String
+  job   Job    @relation(fields: [jobId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Review {
+  id      String  @id @default(uuid())
+  rating  Int // 1-5
+  comment String?
+
+  // Relations
+  jobId String
+  job   Job    @relation(fields: [jobId], references: [id])
+
+  reviewerId String
+  reviewer   User   @relation("Reviewer", fields: [reviewerId], references: [id])
+
+  revieweeId String
+  reviewee   User   @relation("Reviewee", fields: [revieweeId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model Message {
+  id      String @id @default(uuid())
+  content String
+
+  // Relations
+  jobId String?
+  job   Job?    @relation(fields: [jobId], references: [id])
+
+  senderId String
+  sender   User   @relation("Sender", fields: [senderId], references: [id])
+
+  receiverId String
+  receiver   User   @relation("Receiver", fields: [receiverId], references: [id])
+
+  createdAt DateTime @default(now())
 }
