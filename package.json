@@ -16,7 +16,8 @@
     "db:push": "pnpm --filter @onwork/db db:push",
     "db:studio": "pnpm --filter @onwork/db db:studio",
     "db:generate": "pnpm --filter @onwork/db db:generate",
-    "db:migrate": "pnpm --filter @onwork/db db:migrate"
+    "db:migrate": "pnpm --filter @onwork/db db:migrate",
+    "format": "prettier --write ."
   },
   "packageManager": "pnpm@10.8.0",
   "dependencies": {
@@ -24,7 +25,8 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "typescript": "catalog:",
-    "@types/bun": "catalog:"
+    "@types/bun": "catalog:",
+    "prettier": "^3.7.4",
+    "typescript": "catalog:"
   }
 }

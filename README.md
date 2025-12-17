@@ -1,6 +1,7 @@
 - Implement trustless milestone-based escrow contract (ETH & ERC20 support)
 - Add dispute resolution with arbiter
 - Integrate on-chain jobId, hashes, and milestone indices
-- Update Prisma schema to sync perfectly with contract (BigInt onChainId, jobHash, milestoneHashes, etc.)
+- Update Prisma schema to sync perfectly with contract (BigInt onChainId,
+  jobHash, milestoneHashes, etc.)
 - Remove Proposal model to match direct freelancer assignment
 - Ready for frontend integration with Wagmi
