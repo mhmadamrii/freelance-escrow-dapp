@@ -8,61 +8,139 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root';
-import { Route as IndexRouteImport } from './routes/index';
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as publicIndexRouteImport } from './routes/(public)/index'
+import { Route as mainJobsIndexRouteImport } from './routes/(main)/jobs/index'
+import { Route as mainFreelancersIndexRouteImport } from './routes/(main)/freelancers/index'
+import { Route as mainDashboardIndexRouteImport } from './routes/(main)/dashboard/index'
+import { Route as mainJobsIdRouteImport } from './routes/(main)/jobs/$id'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
+const publicIndexRoute = publicIndexRouteImport.update({
+  id: '/(public)/',
   path: '/',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
+const mainJobsIndexRoute = mainJobsIndexRouteImport.update({
+  id: '/(main)/jobs/',
+  path: '/jobs/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const mainFreelancersIndexRoute = mainFreelancersIndexRouteImport.update({
+  id: '/(main)/freelancers/',
+  path: '/freelancers/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const mainDashboardIndexRoute = mainDashboardIndexRouteImport.update({
+  id: '/(main)/dashboard/',
+  path: '/dashboard/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const mainJobsIdRoute = mainJobsIdRouteImport.update({
+  id: '/(main)/jobs/$id',
+  path: '/jobs/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute;
+  '/': typeof publicIndexRoute
+  '/jobs/$id': typeof mainJobsIdRoute
+  '/dashboard': typeof mainDashboardIndexRoute
+  '/freelancers': typeof mainFreelancersIndexRoute
+  '/jobs': typeof mainJobsIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute;
+  '/': typeof publicIndexRoute
+  '/jobs/$id': typeof mainJobsIdRoute
+  '/dashboard': typeof mainDashboardIndexRoute
+  '/freelancers': typeof mainFreelancersIndexRoute
+  '/jobs': typeof mainJobsIndexRoute
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport;
-  '/': typeof IndexRoute;
+  __root__: typeof rootRouteImport
+  '/(public)/': typeof publicIndexRoute
+  '/(main)/jobs/$id': typeof mainJobsIdRoute
+  '/(main)/dashboard/': typeof mainDashboardIndexRoute
+  '/(main)/freelancers/': typeof mainFreelancersIndexRoute
+  '/(main)/jobs/': typeof mainJobsIndexRoute
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
-  fullPaths: '/';
-  fileRoutesByTo: FileRoutesByTo;
-  to: '/';
-  id: '__root__' | '/';
-  fileRoutesById: FileRoutesById;
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths: '/' | '/jobs/$id' | '/dashboard' | '/freelancers' | '/jobs'
+  fileRoutesByTo: FileRoutesByTo
+  to: '/' | '/jobs/$id' | '/dashboard' | '/freelancers' | '/jobs'
+  id:
+    | '__root__'
+    | '/(public)/'
+    | '/(main)/jobs/$id'
+    | '/(main)/dashboard/'
+    | '/(main)/freelancers/'
+    | '/(main)/jobs/'
+  fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute;
+  publicIndexRoute: typeof publicIndexRoute
+  mainJobsIdRoute: typeof mainJobsIdRoute
+  mainDashboardIndexRoute: typeof mainDashboardIndexRoute
+  mainFreelancersIndexRoute: typeof mainFreelancersIndexRoute
+  mainJobsIndexRoute: typeof mainJobsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/';
-      path: '/';
-      fullPath: '/';
-      preLoaderRoute: typeof IndexRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+    '/(public)/': {
+      id: '/(public)/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof publicIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(main)/jobs/': {
+      id: '/(main)/jobs/'
+      path: '/jobs'
+      fullPath: '/jobs'
+      preLoaderRoute: typeof mainJobsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(main)/freelancers/': {
+      id: '/(main)/freelancers/'
+      path: '/freelancers'
+      fullPath: '/freelancers'
+      preLoaderRoute: typeof mainFreelancersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(main)/dashboard/': {
+      id: '/(main)/dashboard/'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof mainDashboardIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(main)/jobs/$id': {
+      id: '/(main)/jobs/$id'
+      path: '/jobs/$id'
+      fullPath: '/jobs/$id'
+      preLoaderRoute: typeof mainJobsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-};
+  publicIndexRoute: publicIndexRoute,
+  mainJobsIdRoute: mainJobsIdRoute,
+  mainDashboardIndexRoute: mainDashboardIndexRoute,
+  mainFreelancersIndexRoute: mainFreelancersIndexRoute,
+  mainJobsIndexRoute: mainJobsIndexRoute,
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>();
+  ._addFileTypes<FileRouteTypes>()
 
-import type { getRouter } from './router.tsx';
-import type { createStart } from '@tanstack/react-start';
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
 declare module '@tanstack/react-start' {
   interface Register {
-    ssr: true;
-    router: Awaited<ReturnType<typeof getRouter>>;
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
   }
 }
