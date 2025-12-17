@@ -1,5 +1,20 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { Calendar, Clock, Wallet } from 'lucide-react';
+import { Calendar, Clock, Wallet, User, Hash } from 'lucide-react';
+import { useReadContract, useReadContracts } from 'wagmi';
+import { formatUnits } from 'viem';
+import abi from '@/lib/abi.json';
+
+const CONTRACT_ADDRESS = '0x5FbDB2315678afecb367f032d93F642f64180aa3';
+
+const JOB_STATUSES = [
+  'Created',
+  'Funded',
+  'In Progress',
+  'Completed',
+  'Disputed',
+  'Resolved',
+  'Cancelled',
+];
 
 export const Route = createFileRoute('/(main)/jobs/')({
   component: RouteComponent,
@@ -63,6 +78,23 @@ function RouteComponent() {
     },
   ];
 
+  const { data: nextJobId } = useReadContract({
+    address: CONTRACT_ADDRESS,
+    abi: abi,
+    functionName: 'nextJobId',
+  });
+
+  const { data: jobsList } = useReadContracts({
+    contracts: nextJobId
+      ? Array.from({ length: Number(nextJobId) }, (_, i) => ({
+          address: CONTRACT_ADDRESS,
+          abi: abi,
+          functionName: 'jobs',
+          args: [BigInt(i)],
+        }))
+      : [],
+  });
+
   return (
     <div className='min-h-screen py-12 px-6'>
       <div className='max-w-6xl mx-auto'>
@@ -100,6 +132,71 @@ function RouteComponent() {
             </div>
           ))}
         </div>
+
+        {jobsList && jobsList.length > 0 && (
+          <>
+            <h2 className='text-3xl font-bold mb-8 mt-12'>On-Chain Jobs</h2>
+            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+              {jobsList.map((jobResult, index) => {
+                if (jobResult.status !== 'success') return null;
+                // @ts-ignore
+                const [
+                  jobId,
+                  client,
+                  freelancer,
+                  arbiter,
+                  token,
+                  totalAmount,
+                  status,
+                ] = jobResult.result;
+
+                return (
+                  <div
+                    key={index}
+                    className='bg-card border rounded-xl p-6 hover:shadow-lg transition-shadow'
+                  >
+                    <div className='flex justify-between items-start mb-3'>
+                      <h2 className='text-xl font-semibold'>
+                        Job #{jobId.toString()}
+                      </h2>
+                      <span className='px-2 py-1 text-xs bg-primary/10 rounded-full'>
+                        {JOB_STATUSES[status] || 'Unknown'}
+                      </span>
+                    </div>
+
+                    <p className='text-muted-foreground text-sm mb-6'>
+                      This job is stored on-chain. Title and description are
+                      hashed.
+                    </p>
+
+                    <div className='space-y-3'>
+                      <div className='flex items-center gap-2 text-sm'>
+                        <User className='w-4 h-4' />
+                        <span className='font-medium truncate w-full'>
+                          Client: {client}
+                        </span>
+                      </div>
+                      <div className='flex items-center gap-2 text-sm'>
+                        <Wallet className='w-4 h-4' />
+                        <span className='font-medium'>
+                          {formatUnits(totalAmount, 18)} Tokens
+                        </span>
+                      </div>
+                      <div className='flex items-center gap-2 text-sm text-muted-foreground'>
+                        <Hash className='w-4 h-4' />
+                        <span className='truncate w-full'>Token: {token}</span>
+                      </div>
+                    </div>
+
+                    <button className='mt-6 w-full py-2 border border-primary text-primary rounded-lg font-medium hover:bg-primary hover:text-primary-foreground transition'>
+                      View On-Chain Details
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

@@ -27,10 +27,12 @@ function RouteComponent() {
           done, funds get released — automatically.
         </p>
         <div className='flex flex-col sm:flex-row gap-4 justify-center'>
-          <button className='px-8 py-4 text-lg font-semibold bg-primary text-primary-foreground rounded-lg'>
-            Post a Job
-          </button>
-          <Link className='cursor-pointer' to='/jobs'>
+          <Link to='/jobs/create'>
+            <button className='px-8 py-4 text-lg font-semibold bg-primary text-primary-foreground rounded-lg'>
+              Post a Job
+            </button>
+          </Link>
+          <Link to='/jobs'>
             <button className='px-8 py-4 text-lg font-semibold border border-primary text-primary rounded-lg'>
               Find Work
             </button>
