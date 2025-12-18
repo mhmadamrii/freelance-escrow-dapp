@@ -11,6 +11,23 @@ export const jobRouter = router({
       },
     });
   }),
+  jobById: protectedProcedure
+    .input(
+      z.object({
+        jobId: z.string(),
+      }),
+    )
+    .query(({ input }) => {
+      return prisma.job.findUnique({
+        where: {
+          id: input.jobId,
+        },
+        include: {
+          milestones: true,
+          reviews: true,
+        },
+      });
+    }),
   deleteJob: protectedProcedure
     .input(
       z.object({

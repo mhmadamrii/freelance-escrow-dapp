@@ -8,7 +8,6 @@ export const milestoneRouter = {
     .input(
       z.object({
         jobId: z.string(),
-
         // must come from confirmed on-chain calldata / event
         milestones: z.array(
           z.object({

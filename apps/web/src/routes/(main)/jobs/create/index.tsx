@@ -7,9 +7,9 @@ import { ARBITER_ADDRESS } from '@/lib/constants';
 import { toast } from 'sonner';
 import { Loader2, Plus, Trash2 } from 'lucide-react';
 import { useTRPC } from '@/utils/trpc';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Label } from '@/components/ui/label';
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useState, useEffect } from 'react';
 
 import {
@@ -40,6 +40,8 @@ export const Route = createFileRoute('/(main)/jobs/create/')({
 
 function RouteComponent() {
   const trpc = useTRPC();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const { address } = useAccount();
   const [title, setTitle] = useState('');
@@ -61,12 +63,29 @@ function RouteComponent() {
     hash,
   });
 
-  console.log('receipt', receipt);
+  const { mutate: createMilestones } = useMutation(
+    trpc.milestone.createMilestones.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries();
+        toast.success('Milestones created successfully!');
+        navigate({ to: '/jobs' });
+      },
+    }),
+  );
 
   const { mutate, isPending: isCreatingOffChain } = useMutation(
     trpc.job.createJob.mutationOptions({
-      onSuccess: () => {
+      onSuccess: (res) => {
         toast.success('Job created successfully!');
+        createMilestones({
+          jobId: res.id,
+          milestones: milestones.map((m) => ({
+            amount: m.amount,
+            descriptionHash: keccak256(
+              encodePacked(['string'], [m.description]),
+            ),
+          })),
+        });
       },
       onError: (error) => {
         console.log('error', error);

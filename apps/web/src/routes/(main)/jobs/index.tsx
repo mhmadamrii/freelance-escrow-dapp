@@ -32,6 +32,7 @@ function RouteComponent() {
   console.log('nextJobId', nextJobId);
 
   const { data: allJobs } = useQuery(trpc.job.allJobs.queryOptions());
+  console.log('allJobs', allJobs);
 
   const { mutate: deleteJob, isPending: isDeletingJob } = useMutation(
     trpc.job.deleteJob.mutationOptions({
@@ -41,7 +42,6 @@ function RouteComponent() {
       },
     }),
   );
-  console.log('data');
 
   return (
     <div className='min-h-screen py-12 px-6'>
@@ -68,8 +68,14 @@ function RouteComponent() {
                   </span>
                 </div>
                 <div className='flex items-center gap-2 text-sm text-muted-foreground'>
-                  <Clock className='w-4 h-4' />
-                  <span>1 Month</span>
+                  <div className='flex items-center gap-2 text-sm text-muted-foreground'>
+                    <Clock className='w-4 h-4' />
+                    <span>1 Month</span>
+                  </div>
+                  <div className='flex items-center gap-2 text-sm text-muted-foreground'>
+                    <Clock className='w-4 h-4' />
+                    <span>{job.milestones.length} milestones</span>
+                  </div>
                 </div>
                 <div className='flex items-center gap-2 text-sm text-muted-foreground'>
                   <Calendar className='w-4 h-4' />

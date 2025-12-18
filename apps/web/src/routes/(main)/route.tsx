@@ -21,7 +21,6 @@ export const Route = createFileRoute('/(main)')({
 
 function RouteComponent() {
   const { data: session } = authClient.useSession();
-  console.log('user serssion', session);
   if (!session) {
     return (
       <div className='flex items-center justify-center h-screen'>
