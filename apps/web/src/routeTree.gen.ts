@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as mainRouteRouteImport } from './routes/(main)/route'
 import { Route as publicIndexRouteImport } from './routes/(public)/index'
 import { Route as mainProfileIndexRouteImport } from './routes/(main)/profile/index'
 import { Route as mainJobsIndexRouteImport } from './routes/(main)/jobs/index'
@@ -17,40 +18,44 @@ import { Route as mainDashboardIndexRouteImport } from './routes/(main)/dashboar
 import { Route as mainJobsIdRouteImport } from './routes/(main)/jobs/$id'
 import { Route as mainJobsCreateIndexRouteImport } from './routes/(main)/jobs/create/index'
 
+const mainRouteRoute = mainRouteRouteImport.update({
+  id: '/(main)',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const publicIndexRoute = publicIndexRouteImport.update({
   id: '/(public)/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const mainProfileIndexRoute = mainProfileIndexRouteImport.update({
-  id: '/(main)/profile/',
+  id: '/profile/',
   path: '/profile/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => mainRouteRoute,
 } as any)
 const mainJobsIndexRoute = mainJobsIndexRouteImport.update({
-  id: '/(main)/jobs/',
+  id: '/jobs/',
   path: '/jobs/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => mainRouteRoute,
 } as any)
 const mainFreelancersIndexRoute = mainFreelancersIndexRouteImport.update({
-  id: '/(main)/freelancers/',
+  id: '/freelancers/',
   path: '/freelancers/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => mainRouteRoute,
 } as any)
 const mainDashboardIndexRoute = mainDashboardIndexRouteImport.update({
-  id: '/(main)/dashboard/',
+  id: '/dashboard/',
   path: '/dashboard/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => mainRouteRoute,
 } as any)
 const mainJobsIdRoute = mainJobsIdRouteImport.update({
-  id: '/(main)/jobs/$id',
+  id: '/jobs/$id',
   path: '/jobs/$id',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => mainRouteRoute,
 } as any)
 const mainJobsCreateIndexRoute = mainJobsCreateIndexRouteImport.update({
-  id: '/(main)/jobs/create/',
+  id: '/jobs/create/',
   path: '/jobs/create/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => mainRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -73,6 +78,7 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/(main)': typeof mainRouteRouteWithChildren
   '/(public)/': typeof publicIndexRoute
   '/(main)/jobs/$id': typeof mainJobsIdRoute
   '/(main)/dashboard/': typeof mainDashboardIndexRoute
@@ -102,6 +108,7 @@ export interface FileRouteTypes {
     | '/jobs/create'
   id:
     | '__root__'
+    | '/(main)'
     | '/(public)/'
     | '/(main)/jobs/$id'
     | '/(main)/dashboard/'
@@ -112,17 +119,19 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  mainRouteRoute: typeof mainRouteRouteWithChildren
   publicIndexRoute: typeof publicIndexRoute
-  mainJobsIdRoute: typeof mainJobsIdRoute
-  mainDashboardIndexRoute: typeof mainDashboardIndexRoute
-  mainFreelancersIndexRoute: typeof mainFreelancersIndexRoute
-  mainJobsIndexRoute: typeof mainJobsIndexRoute
-  mainProfileIndexRoute: typeof mainProfileIndexRoute
-  mainJobsCreateIndexRoute: typeof mainJobsCreateIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/(main)': {
+      id: '/(main)'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof mainRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/(public)/': {
       id: '/(public)/'
       path: '/'
@@ -135,54 +144,71 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof mainProfileIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof mainRouteRoute
     }
     '/(main)/jobs/': {
       id: '/(main)/jobs/'
       path: '/jobs'
       fullPath: '/jobs'
       preLoaderRoute: typeof mainJobsIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof mainRouteRoute
     }
     '/(main)/freelancers/': {
       id: '/(main)/freelancers/'
       path: '/freelancers'
       fullPath: '/freelancers'
       preLoaderRoute: typeof mainFreelancersIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof mainRouteRoute
     }
     '/(main)/dashboard/': {
       id: '/(main)/dashboard/'
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof mainDashboardIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof mainRouteRoute
     }
     '/(main)/jobs/$id': {
       id: '/(main)/jobs/$id'
       path: '/jobs/$id'
       fullPath: '/jobs/$id'
       preLoaderRoute: typeof mainJobsIdRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof mainRouteRoute
     }
     '/(main)/jobs/create/': {
       id: '/(main)/jobs/create/'
       path: '/jobs/create'
       fullPath: '/jobs/create'
       preLoaderRoute: typeof mainJobsCreateIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof mainRouteRoute
     }
   }
 }
 
-const rootRouteChildren: RootRouteChildren = {
-  publicIndexRoute: publicIndexRoute,
+interface mainRouteRouteChildren {
+  mainJobsIdRoute: typeof mainJobsIdRoute
+  mainDashboardIndexRoute: typeof mainDashboardIndexRoute
+  mainFreelancersIndexRoute: typeof mainFreelancersIndexRoute
+  mainJobsIndexRoute: typeof mainJobsIndexRoute
+  mainProfileIndexRoute: typeof mainProfileIndexRoute
+  mainJobsCreateIndexRoute: typeof mainJobsCreateIndexRoute
+}
+
+const mainRouteRouteChildren: mainRouteRouteChildren = {
   mainJobsIdRoute: mainJobsIdRoute,
   mainDashboardIndexRoute: mainDashboardIndexRoute,
   mainFreelancersIndexRoute: mainFreelancersIndexRoute,
   mainJobsIndexRoute: mainJobsIndexRoute,
   mainProfileIndexRoute: mainProfileIndexRoute,
   mainJobsCreateIndexRoute: mainJobsCreateIndexRoute,
+}
+
+const mainRouteRouteWithChildren = mainRouteRoute._addFileChildren(
+  mainRouteRouteChildren,
+)
+
+const rootRouteChildren: RootRouteChildren = {
+  mainRouteRoute: mainRouteRouteWithChildren,
+  publicIndexRoute: publicIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

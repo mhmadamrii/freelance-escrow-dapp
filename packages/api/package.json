@@ -20,6 +20,7 @@
     "hono": "catalog:",
     "dotenv": "catalog:",
     "zod": "catalog:",
-    "@onwork/db": "workspace:*"
+    "@onwork/db": "workspace:*",
+    "@onwork/auth": "workspace:*"
   }
 }

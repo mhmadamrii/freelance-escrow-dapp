@@ -1,14 +1,22 @@
+import abi from '@/lib/abi.json';
+
+import { parseUnits, keccak256, encodePacked } from 'viem';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
+import { Loader2, Plus, Trash2 } from 'lucide-react';
+import { useTRPC } from '@/utils/trpc';
+import { useMutation } from '@tanstack/react-query';
+import { Label } from '@/components/ui/label';
 import { createFileRoute } from '@tanstack/react-router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
 import {
   useWriteContract,
   useWaitForTransactionReceipt,
   useAccount,
 } from 'wagmi';
-import { parseUnits, keccak256, toHex, encodePacked } from 'viem';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+
 import {
   Card,
   CardContent,
@@ -16,9 +24,6 @@ import {
   CardTitle,
   CardDescription,
 } from '@/components/ui/card';
-import { toast } from 'sonner';
-import abi from '@/lib/abi.json';
-import { Loader2, Plus, Trash2 } from 'lucide-react';
 
 export const Route = createFileRoute('/(main)/jobs/create/')({
   component: RouteComponent,
@@ -28,6 +33,8 @@ const ETH_DEFAULT_TOKEN = '0x0000000000000000000000000000000000000000';
 const ARBITER_DEFAULT_ADDRESS = '0x70997970c51812dc3a010c7d01b50e0d17dc79c8';
 
 function RouteComponent() {
+  const trpc = useTRPC();
+
   const { address } = useAccount();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -42,6 +49,19 @@ function RouteComponent() {
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
     hash,
   });
+
+  const { mutate, isPending: isCreatingOffChain } = useMutation(
+    trpc.job.createJob.mutationOptions({
+      onSuccess: () => {
+        toast.success('Job created successfully!');
+      },
+      onError: (error) => {
+        toast.error(
+          `Job created on-chain but failed off-chain: ${error.message}`,
+        );
+      },
+    }),
+  );
 
   const handleAddMilestone = () => {
     setMilestones([...milestones, { description: '', amount: '' }]);
@@ -70,7 +90,6 @@ function RouteComponent() {
     }
 
     try {
-      // Generate hashes
       const jobHash = keccak256(
         encodePacked(['string', 'string'], [title, description]),
       );
@@ -84,6 +103,7 @@ function RouteComponent() {
 
       // Validate total amount matches sum of milestones
       const sumMilestones = milestoneAmounts.reduce((a, b) => a + b, 0n);
+
       if (sumMilestones !== totalAmountParsed) {
         toast.error('Total amount must equal the sum of milestone amounts');
         return;
@@ -108,9 +128,15 @@ function RouteComponent() {
     }
   };
 
-  if (isSuccess) {
-    toast.success('Job created successfully!');
-  }
+  useEffect(() => {
+    if (isSuccess) {
+      mutate({
+        title,
+        description,
+        budget: Number(totalAmount),
+      });
+    }
+  }, [isSuccess]);
 
   return (
     <div className='container mx-auto py-10 max-w-2xl'>
@@ -248,12 +274,16 @@ function RouteComponent() {
             <Button
               type='submit'
               className='w-full'
-              disabled={isPending || isConfirming}
+              disabled={isPending || isConfirming || isCreatingOffChain}
             >
-              {isPending || isConfirming ? (
+              {isPending || isConfirming || isCreatingOffChain ? (
                 <>
                   <Loader2 className='w-4 h-4 mr-2 animate-spin' />
-                  {isPending ? 'Confirming...' : 'Processing...'}
+                  {isPending
+                    ? 'Confirming...'
+                    : isConfirming
+                      ? 'Processing...'
+                      : 'Creating Job...'}
                 </>
               ) : (
                 'Create Job'
