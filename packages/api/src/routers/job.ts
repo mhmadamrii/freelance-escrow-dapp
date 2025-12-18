@@ -4,6 +4,26 @@ import prisma from '@onwork/db';
 import { protectedProcedure, router } from '..';
 
 export const jobRouter = router({
+  allJobs: protectedProcedure.query(({}) => {
+    return prisma.job.findMany({
+      include: {
+        milestones: true,
+      },
+    });
+  }),
+  deleteJob: protectedProcedure
+    .input(
+      z.object({
+        jobId: z.string(),
+      }),
+    )
+    .mutation(({ ctx, input }) => {
+      return prisma.job.delete({
+        where: {
+          id: input.jobId,
+        },
+      });
+    }),
   createJob: protectedProcedure
     .input(
       z.object({

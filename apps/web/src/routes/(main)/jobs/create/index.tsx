@@ -52,9 +52,6 @@ function RouteComponent() {
     { description: string; amount: string }[]
   >([{ description: '', amount: '' }]);
 
-  const { data } = useQuery(trpc.privateData.queryOptions());
-  console.log('data private', data);
-
   const { data: hash, writeContract, isPending } = useWriteContract();
   const {
     data: receipt,
@@ -63,6 +60,8 @@ function RouteComponent() {
   } = useWaitForTransactionReceipt({
     hash,
   });
+
+  console.log('receipt', receipt);
 
   const { mutate, isPending: isCreatingOffChain } = useMutation(
     trpc.job.createJob.mutationOptions({
@@ -161,6 +160,8 @@ function RouteComponent() {
           // Ignore logs that don't match the ABI
         }
       }
+
+      console.log('onChainId', onChainId);
 
       if (onChainId) {
         mutate({
@@ -342,21 +343,6 @@ function RouteComponent() {
           </form>
         </CardContent>
       </Card>
-      <Button
-        onClick={() =>
-          mutate({
-            title,
-            description,
-            jobHash,
-            onChainId: '1234567890123456789012345678901234567890',
-            clientWallet: address!,
-            arbiter: arbiterAddress,
-            totalAmount,
-          })
-        }
-      >
-        Dummy Creation
-      </Button>
     </div>
   );
 }
