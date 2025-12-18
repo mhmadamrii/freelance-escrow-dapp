@@ -27,7 +27,8 @@ model Job {
   description String
 
   // On-chain identifiers
-  onChainId BigInt?   @unique
+  // onChainId BigInt?   @unique
+  onChainId Int?      @unique
   jobHash   String // bytes32
   status    JobStatus @default(CREATED)
 

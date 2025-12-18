@@ -20,7 +20,8 @@ export const jobRouter = router({
     .mutation(async ({ ctx, input }) => {
       return prisma.job.create({
         data: {
-          onChainId: BigInt(input.onChainId),
+          // onChainId: BigInt(input.onChainId),
+          onChainId: Number(input.onChainId),
           jobHash: input.jobHash,
           status: 'CREATED',
           clientWallet: input.clientWallet,

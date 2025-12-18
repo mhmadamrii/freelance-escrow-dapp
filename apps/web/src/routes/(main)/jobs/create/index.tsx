@@ -7,7 +7,7 @@ import { ARBITER_ADDRESS } from '@/lib/constants';
 import { toast } from 'sonner';
 import { Loader2, Plus, Trash2 } from 'lucide-react';
 import { useTRPC } from '@/utils/trpc';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { Label } from '@/components/ui/label';
 import { createFileRoute } from '@tanstack/react-router';
 import { useState, useEffect } from 'react';
@@ -52,6 +52,9 @@ function RouteComponent() {
     { description: string; amount: string }[]
   >([{ description: '', amount: '' }]);
 
+  const { data } = useQuery(trpc.privateData.queryOptions());
+  console.log('data private', data);
+
   const { data: hash, writeContract, isPending } = useWriteContract();
   const {
     data: receipt,
@@ -67,6 +70,7 @@ function RouteComponent() {
         toast.success('Job created successfully!');
       },
       onError: (error) => {
+        console.log('error', error);
         toast.error(
           `Job created on-chain but failed off-chain: ${error.message}`,
         );
@@ -167,6 +171,7 @@ function RouteComponent() {
           clientWallet: address!,
           arbiter: arbiterAddress,
           totalAmount,
+          tokenAddress,
         });
       } else {
         toast.error('Failed to retrieve Job ID from transaction receipt');
@@ -343,7 +348,7 @@ function RouteComponent() {
             title,
             description,
             jobHash,
-            onChainId: 'something',
+            onChainId: '1234567890123456789012345678901234567890',
             clientWallet: address!,
             arbiter: arbiterAddress,
             totalAmount,
