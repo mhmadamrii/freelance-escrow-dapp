@@ -41,6 +41,7 @@ function RouteComponent() {
   const [tokenAddress, setTokenAddress] = useState('');
   const [arbiterAddress, setArbiterAddress] = useState('');
   const [totalAmount, setTotalAmount] = useState('');
+  const [jobHash, setJobHash] = useState('');
   const [milestones, setMilestones] = useState<
     { description: string; amount: string }[]
   >([{ description: '', amount: '' }]);
@@ -93,6 +94,7 @@ function RouteComponent() {
       const jobHash = keccak256(
         encodePacked(['string', 'string'], [title, description]),
       );
+      setJobHash(jobHash);
 
       const milestoneHashes = milestones.map((m) =>
         keccak256(encodePacked(['string'], [m.description])),
@@ -101,7 +103,6 @@ function RouteComponent() {
       const milestoneAmounts = milestones.map((m) => parseUnits(m.amount, 18)); // Assuming 18 decimals for now
       const totalAmountParsed = parseUnits(totalAmount, 18);
 
-      // Validate total amount matches sum of milestones
       const sumMilestones = milestoneAmounts.reduce((a, b) => a + b, 0n);
 
       if (sumMilestones !== totalAmountParsed) {
@@ -133,7 +134,11 @@ function RouteComponent() {
       mutate({
         title,
         description,
-        budget: Number(totalAmount),
+        jobHash,
+        onChainId: '',
+        clientWallet: address!,
+        arbiter: ARBITER_DEFAULT_ADDRESS,
+        totalAmount,
       });
     }
   }, [isSuccess]);
