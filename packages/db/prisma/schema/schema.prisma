@@ -33,25 +33,6 @@ enum MilestoneStatus {
   DISPUTED
 }
 
-model User {
-  id               String    @id @default(uuid())
-  walletAddress    String    @unique
-  role             UserRole  @default(BOTH)
-  username         String?   @unique
-  bio              String?
-  skills           String[]
-  portfolio        String[]
-  avatarUrl        String?
-  postedJobs       Job[]     @relation("ClientJobs")
-  workedJobs       Job[]     @relation("FreelancerJobs")
-  reviewsGiven     Review[]  @relation("Reviewer")
-  reviewsReceived  Review[]  @relation("Reviewee")
-  sentMessages     Message[] @relation("Sender")
-  receivedMessages Message[] @relation("Receiver")
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-}
-
 model Job {
   id           String   @id @default(uuid())
   title        String

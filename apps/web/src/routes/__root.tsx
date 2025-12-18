@@ -56,8 +56,8 @@ function RootDocument() {
       </head>
       <body>
         <div className='grid h-svh grid-rows-[auto_1fr]'>
-          <Header />
           <RainbowKitProvider>
+            <Header />
             <Outlet />
           </RainbowKitProvider>
         </div>

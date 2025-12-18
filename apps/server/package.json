@@ -16,7 +16,8 @@
     "dotenv": "catalog:",
     "zod": "catalog:",
     "@onwork/api": "workspace:*",
-    "@onwork/db": "workspace:*"
+    "@onwork/db": "workspace:*",
+    "@onwork/auth": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "catalog:",

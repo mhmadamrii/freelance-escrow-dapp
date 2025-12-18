@@ -12,11 +12,11 @@
   "frontend": ["tanstack-start"],
   "addons": [],
   "examples": [],
-  "auth": "none",
   "payments": "none",
   "packageManager": "pnpm",
   "dbSetup": "none",
   "api": "trpc",
   "webDeploy": "none",
   "serverDeploy": "none",
+  "auth": "better-auth",
 }
