@@ -1,16 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import {
-  ShieldCheck,
-  Zap,
-  Globe,
-  CheckCircle2,
-  ArrowRight,
-  Layers,
-  Coins,
-  Lock,
-} from 'lucide-react';
-import { cn } from '@/lib/utils'; // Assuming this exists, if not I'll inline clsx/tailwind-merge
+import { ShieldCheck, Zap, Globe, Layers, Coins, Lock } from 'lucide-react';
 
 export const Route = createFileRoute('/(public)/')({
   component: LandingPage,

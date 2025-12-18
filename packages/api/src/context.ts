@@ -9,6 +9,7 @@ export async function createContext({ context }: CreateContextOptions) {
   const session = await auth.api.getSession({
     headers: context.req.raw.headers,
   });
+  console.log('context session', session);
   return {
     session,
   };

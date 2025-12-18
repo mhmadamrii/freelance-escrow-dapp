@@ -1,8 +1,9 @@
 import abi from '@/lib/abi.json';
 
-import { parseUnits, keccak256, encodePacked } from 'viem';
+import { parseUnits, keccak256, encodePacked, decodeEventLog } from 'viem';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { ARBITER_ADDRESS } from '@/lib/constants';
 import { toast } from 'sonner';
 import { Loader2, Plus, Trash2 } from 'lucide-react';
 import { useTRPC } from '@/utils/trpc';
@@ -10,6 +11,14 @@ import { useMutation } from '@tanstack/react-query';
 import { Label } from '@/components/ui/label';
 import { createFileRoute } from '@tanstack/react-router';
 import { useState, useEffect } from 'react';
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 import {
   useWriteContract,
@@ -29,9 +38,6 @@ export const Route = createFileRoute('/(main)/jobs/create/')({
   component: RouteComponent,
 });
 
-const ETH_DEFAULT_TOKEN = '0x0000000000000000000000000000000000000000';
-const ARBITER_DEFAULT_ADDRESS = '0x70997970c51812dc3a010c7d01b50e0d17dc79c8';
-
 function RouteComponent() {
   const trpc = useTRPC();
 
@@ -39,7 +45,7 @@ function RouteComponent() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [tokenAddress, setTokenAddress] = useState('');
-  const [arbiterAddress, setArbiterAddress] = useState('');
+  const [arbiterAddress, setArbiterAddress] = useState(ARBITER_ADDRESS[0]);
   const [totalAmount, setTotalAmount] = useState('');
   const [jobHash, setJobHash] = useState('');
   const [milestones, setMilestones] = useState<
@@ -47,7 +53,11 @@ function RouteComponent() {
   >([{ description: '', amount: '' }]);
 
   const { data: hash, writeContract, isPending } = useWriteContract();
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+  const {
+    data: receipt,
+    isLoading: isConfirming,
+    isSuccess,
+  } = useWaitForTransactionReceipt({
     hash,
   });
 
@@ -130,21 +140,42 @@ function RouteComponent() {
   };
 
   useEffect(() => {
-    if (isSuccess) {
-      mutate({
-        title,
-        description,
-        jobHash,
-        onChainId: '',
-        clientWallet: address!,
-        arbiter: ARBITER_DEFAULT_ADDRESS,
-        totalAmount,
-      });
+    if (isSuccess && receipt) {
+      let onChainId = '';
+      for (const log of receipt.logs) {
+        try {
+          const decodedLog = decodeEventLog({
+            abi: abi,
+            data: log.data,
+            topics: log.topics,
+          });
+          if (decodedLog.eventName === 'JobCreated') {
+            onChainId = (decodedLog.args as any).jobId.toString();
+            break;
+          }
+        } catch (e) {
+          // Ignore logs that don't match the ABI
+        }
+      }
+
+      if (onChainId) {
+        mutate({
+          title,
+          description,
+          jobHash,
+          onChainId,
+          clientWallet: address!,
+          arbiter: arbiterAddress,
+          totalAmount,
+        });
+      } else {
+        toast.error('Failed to retrieve Job ID from transaction receipt');
+      }
     }
-  }, [isSuccess]);
+  }, [isSuccess, receipt]);
 
   return (
-    <div className='container mx-auto py-10 max-w-2xl'>
+    <div className='container mx-auto py-10'>
       <Card>
         <CardHeader>
           <CardTitle>Create a New Job</CardTitle>
@@ -189,13 +220,22 @@ function RouteComponent() {
               </div>
               <div className='space-y-2'>
                 <Label htmlFor='arbiter'>Arbiter Address</Label>
-                <Input
-                  id='arbiter'
-                  placeholder='0x...'
+                <Select
                   value={arbiterAddress}
-                  onChange={(e) => setArbiterAddress(e.target.value)}
+                  onValueChange={setArbiterAddress}
                   required
-                />
+                >
+                  <SelectTrigger id='arbiter'>
+                    <SelectValue placeholder='Select an arbiter' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ARBITER_ADDRESS.map((addr) => (
+                      <SelectItem key={addr} value={addr}>
+                        {addr}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
@@ -297,6 +337,21 @@ function RouteComponent() {
           </form>
         </CardContent>
       </Card>
+      <Button
+        onClick={() =>
+          mutate({
+            title,
+            description,
+            jobHash,
+            onChainId: 'something',
+            clientWallet: address!,
+            arbiter: arbiterAddress,
+            totalAmount,
+          })
+        }
+      >
+        Dummy Creation
+      </Button>
     </div>
   );
 }

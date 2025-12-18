@@ -61,6 +61,7 @@ function RouteComponent() {
         />
       </div>
       <Button onClick={handleSignUp}>Sign up</Button>
+      <Button onClick={() => authClient.signOut()}>Log out</Button>
     </div>
   );
 }
