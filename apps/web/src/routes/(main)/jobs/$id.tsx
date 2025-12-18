@@ -37,9 +37,6 @@ function RouteComponent() {
   });
 
   const handleAssignFreelancer = async () => {
-    if (data?.clientWallet === address) {
-      return toast.error('Cannot assign yourself as freelancer');
-    }
     try {
       writeContract({
         address: '0x5FbDB2315678afecb367f032d93F642f64180aa3', // Replace with actual contract address
