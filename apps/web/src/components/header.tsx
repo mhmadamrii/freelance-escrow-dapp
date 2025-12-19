@@ -2,10 +2,10 @@ import { Link } from '@tanstack/react-router';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { Briefcase, Search, LayoutDashboard, ShieldCheck } from 'lucide-react';
 
-export default function Header() {
+export function Header() {
   const links = [
     {
-      to: '/',
+      to: '/dashboard',
       label: 'Home',
       icon: null,
     },
@@ -34,7 +34,7 @@ export default function Header() {
             <div className='flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground'>
               <ShieldCheck className='h-5 w-5' />
             </div>
-            <span>EscrowDapp</span>
+            <span>OnWork</span>
           </Link>
         </div>
 

@@ -30,7 +30,7 @@ function LandingPage() {
           </p>
 
           <div className='flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up animation-delay-300'>
-            <Link to='/jobs/create'>
+            <Link to='/auth'>
               <button className='w-full sm:w-auto px-8 py-4 text-lg font-semibold bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/25'>
                 Post a Job
               </button>

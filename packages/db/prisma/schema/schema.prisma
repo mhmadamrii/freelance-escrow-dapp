@@ -12,6 +12,7 @@ datasource db {
 enum JobStatus {
   CREATED
   FUNDED
+  WAITING_FUNDING
   IN_PROGRESS
   COMPLETED
   DISPUTED

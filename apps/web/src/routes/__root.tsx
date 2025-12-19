@@ -1,4 +1,3 @@
-import Header from '../components/header';
 import appCss from '../index.css?url';
 
 import { Toaster } from '@/components/ui/sonner';
@@ -57,7 +56,6 @@ function RootDocument() {
       <body>
         <div className='grid h-svh grid-rows-[auto_1fr]'>
           <RainbowKitProvider>
-            <Header />
             <Outlet />
           </RainbowKitProvider>
         </div>

@@ -1,11 +1,12 @@
 import abi from '@/lib/abi.json';
-
+import { FREELANCE_ESCROW_ADDRESS } from '@/lib/constants';
+import { useMutation } from '@tanstack/react-query';
+import { useTRPC } from '@/utils/trpc';
+import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import {
-  useAccount,
-  useWaitForTransactionReceipt,
-  useWriteContract,
-} from 'wagmi';
+import { useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
 
 import {
   AlertDialog,
@@ -19,51 +20,107 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 
-export function AssignFreelancer({ onChainId }: { onChainId: string }) {
-  const { address } = useAccount();
-  const { data: hash, writeContract, isPending } = useWriteContract();
+interface AssignFreelancerProps {
+  jobId: string;
+  onChainId: string;
+  freelancerAddress: string;
+}
+
+export function AssignFreelancer({
+  jobId,
+  onChainId,
+  freelancerAddress,
+}: AssignFreelancerProps) {
+  const trpc = useTRPC();
+  const [open, setOpen] = useState(false);
+
   const {
-    data: receipt,
-    isLoading: isConfirming,
-    isSuccess,
-  } = useWaitForTransactionReceipt({
+    data: hash,
+    writeContract,
+    isPending,
+    error: writeError,
+  } = useWriteContract();
+
+  const { mutate } = useMutation(
+    trpc.job.waitingFundingJobById.mutationOptions({
+      onSuccess: () => {
+        toast.success('Job is waiting to be funded!');
+      },
+      onError: (err) => {
+        console.log('error', err);
+        toast.error('Error assigning freelancer');
+      },
+    }),
+  );
+
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
     hash,
   });
 
-  console.log({
-    receipt,
-    isLoading: isConfirming,
-    isSuccess,
-    isPending,
-  });
+  useEffect(() => {
+    if (isSuccess) {
+      toast.success('Freelancer assigned successfully!');
+      setOpen(false);
+      mutate({ jobId });
+      // Optional: Refresh page or invalidate queries
+      // window.location.reload();
+    }
+  }, [isSuccess]);
 
-  const handleAssignFreelancer = async () => {
-    try {
-      writeContract({
-        address: '0x5FbDB2315678afecb367f032d93F642f64180aa3', // Replace with actual contract address
-        abi: abi,
-        functionName: 'assignFreelancer',
-        args: [BigInt(onChainId ?? 0n), address],
-      });
-    } catch (error) {}
+  useEffect(() => {
+    if (writeError) {
+      toast.error(`Error assigning freelancer: ${writeError.message}`);
+    }
+  }, [writeError]);
+
+  const handleAssignFreelancer = () => {
+    writeContract({
+      address: FREELANCE_ESCROW_ADDRESS as `0x${string}`,
+      abi: abi,
+      functionName: 'assignFreelancer',
+      args: [BigInt(onChainId ?? 0n), freelancerAddress as `0x${string}`],
+    });
   };
+
   return (
-    <AlertDialog>
+    <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <Button variant='outline'>Show Dialog</Button>
+        <Button className='w-full' size='sm'>
+          Assign Freelancer
+        </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+          <AlertDialogTitle>Assign Freelancer</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete your
-            account and remove your data from our servers.
+            Are you sure you want to assign this freelancer? This action will
+            set the freelancer for this job on the blockchain.
+            <br />
+            <br />
+            <span className='font-mono text-xs bg-muted p-1 rounded'>
+              {freelancerAddress}
+            </span>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={handleAssignFreelancer}>
-            Continue
+          <AlertDialogCancel disabled={isPending || isConfirming}>
+            Cancel
+          </AlertDialogCancel>
+          <AlertDialogAction
+            onClick={(e) => {
+              e.preventDefault();
+              handleAssignFreelancer();
+            }}
+            disabled={isPending || isConfirming}
+          >
+            {isPending || isConfirming ? (
+              <>
+                <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                {isPending ? 'Confirming...' : 'Processing...'}
+              </>
+            ) : (
+              'Confirm Assignment'
+            )}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
