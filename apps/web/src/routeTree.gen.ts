@@ -16,8 +16,9 @@ import { Route as mainProfileIndexRouteImport } from './routes/(main)/profile/in
 import { Route as mainJobsIndexRouteImport } from './routes/(main)/jobs/index'
 import { Route as mainFreelancersIndexRouteImport } from './routes/(main)/freelancers/index'
 import { Route as mainDashboardIndexRouteImport } from './routes/(main)/dashboard/index'
-import { Route as mainJobsIdRouteImport } from './routes/(main)/jobs/$id'
 import { Route as mainJobsCreateIndexRouteImport } from './routes/(main)/jobs/create/index'
+import { Route as mainJobsIdIndexRouteImport } from './routes/(main)/jobs/$id/index'
+import { Route as mainJobsIdApplicationRouteImport } from './routes/(main)/jobs/$id/application'
 
 const mainRouteRoute = mainRouteRouteImport.update({
   id: '/(main)',
@@ -53,35 +54,42 @@ const mainDashboardIndexRoute = mainDashboardIndexRouteImport.update({
   path: '/dashboard/',
   getParentRoute: () => mainRouteRoute,
 } as any)
-const mainJobsIdRoute = mainJobsIdRouteImport.update({
-  id: '/jobs/$id',
-  path: '/jobs/$id',
-  getParentRoute: () => mainRouteRoute,
-} as any)
 const mainJobsCreateIndexRoute = mainJobsCreateIndexRouteImport.update({
   id: '/jobs/create/',
   path: '/jobs/create/',
+  getParentRoute: () => mainRouteRoute,
+} as any)
+const mainJobsIdIndexRoute = mainJobsIdIndexRouteImport.update({
+  id: '/jobs/$id/',
+  path: '/jobs/$id/',
+  getParentRoute: () => mainRouteRoute,
+} as any)
+const mainJobsIdApplicationRoute = mainJobsIdApplicationRouteImport.update({
+  id: '/jobs/$id/application',
+  path: '/jobs/$id/application',
   getParentRoute: () => mainRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/auth': typeof publicAuthRoute
   '/': typeof publicIndexRoute
-  '/jobs/$id': typeof mainJobsIdRoute
   '/dashboard': typeof mainDashboardIndexRoute
   '/freelancers': typeof mainFreelancersIndexRoute
   '/jobs': typeof mainJobsIndexRoute
   '/profile': typeof mainProfileIndexRoute
+  '/jobs/$id/application': typeof mainJobsIdApplicationRoute
+  '/jobs/$id': typeof mainJobsIdIndexRoute
   '/jobs/create': typeof mainJobsCreateIndexRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof publicAuthRoute
   '/': typeof publicIndexRoute
-  '/jobs/$id': typeof mainJobsIdRoute
   '/dashboard': typeof mainDashboardIndexRoute
   '/freelancers': typeof mainFreelancersIndexRoute
   '/jobs': typeof mainJobsIndexRoute
   '/profile': typeof mainProfileIndexRoute
+  '/jobs/$id/application': typeof mainJobsIdApplicationRoute
+  '/jobs/$id': typeof mainJobsIdIndexRoute
   '/jobs/create': typeof mainJobsCreateIndexRoute
 }
 export interface FileRoutesById {
@@ -89,11 +97,12 @@ export interface FileRoutesById {
   '/(main)': typeof mainRouteRouteWithChildren
   '/(public)/auth': typeof publicAuthRoute
   '/(public)/': typeof publicIndexRoute
-  '/(main)/jobs/$id': typeof mainJobsIdRoute
   '/(main)/dashboard/': typeof mainDashboardIndexRoute
   '/(main)/freelancers/': typeof mainFreelancersIndexRoute
   '/(main)/jobs/': typeof mainJobsIndexRoute
   '/(main)/profile/': typeof mainProfileIndexRoute
+  '/(main)/jobs/$id/application': typeof mainJobsIdApplicationRoute
+  '/(main)/jobs/$id/': typeof mainJobsIdIndexRoute
   '/(main)/jobs/create/': typeof mainJobsCreateIndexRoute
 }
 export interface FileRouteTypes {
@@ -101,32 +110,35 @@ export interface FileRouteTypes {
   fullPaths:
     | '/auth'
     | '/'
-    | '/jobs/$id'
     | '/dashboard'
     | '/freelancers'
     | '/jobs'
     | '/profile'
+    | '/jobs/$id/application'
+    | '/jobs/$id'
     | '/jobs/create'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
     | '/'
-    | '/jobs/$id'
     | '/dashboard'
     | '/freelancers'
     | '/jobs'
     | '/profile'
+    | '/jobs/$id/application'
+    | '/jobs/$id'
     | '/jobs/create'
   id:
     | '__root__'
     | '/(main)'
     | '/(public)/auth'
     | '/(public)/'
-    | '/(main)/jobs/$id'
     | '/(main)/dashboard/'
     | '/(main)/freelancers/'
     | '/(main)/jobs/'
     | '/(main)/profile/'
+    | '/(main)/jobs/$id/application'
+    | '/(main)/jobs/$id/'
     | '/(main)/jobs/create/'
   fileRoutesById: FileRoutesById
 }
@@ -187,13 +199,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof mainDashboardIndexRouteImport
       parentRoute: typeof mainRouteRoute
     }
-    '/(main)/jobs/$id': {
-      id: '/(main)/jobs/$id'
-      path: '/jobs/$id'
-      fullPath: '/jobs/$id'
-      preLoaderRoute: typeof mainJobsIdRouteImport
-      parentRoute: typeof mainRouteRoute
-    }
     '/(main)/jobs/create/': {
       id: '/(main)/jobs/create/'
       path: '/jobs/create'
@@ -201,24 +206,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof mainJobsCreateIndexRouteImport
       parentRoute: typeof mainRouteRoute
     }
+    '/(main)/jobs/$id/': {
+      id: '/(main)/jobs/$id/'
+      path: '/jobs/$id'
+      fullPath: '/jobs/$id'
+      preLoaderRoute: typeof mainJobsIdIndexRouteImport
+      parentRoute: typeof mainRouteRoute
+    }
+    '/(main)/jobs/$id/application': {
+      id: '/(main)/jobs/$id/application'
+      path: '/jobs/$id/application'
+      fullPath: '/jobs/$id/application'
+      preLoaderRoute: typeof mainJobsIdApplicationRouteImport
+      parentRoute: typeof mainRouteRoute
+    }
   }
 }
 
 interface mainRouteRouteChildren {
-  mainJobsIdRoute: typeof mainJobsIdRoute
   mainDashboardIndexRoute: typeof mainDashboardIndexRoute
   mainFreelancersIndexRoute: typeof mainFreelancersIndexRoute
   mainJobsIndexRoute: typeof mainJobsIndexRoute
   mainProfileIndexRoute: typeof mainProfileIndexRoute
+  mainJobsIdApplicationRoute: typeof mainJobsIdApplicationRoute
+  mainJobsIdIndexRoute: typeof mainJobsIdIndexRoute
   mainJobsCreateIndexRoute: typeof mainJobsCreateIndexRoute
 }
 
 const mainRouteRouteChildren: mainRouteRouteChildren = {
-  mainJobsIdRoute: mainJobsIdRoute,
   mainDashboardIndexRoute: mainDashboardIndexRoute,
   mainFreelancersIndexRoute: mainFreelancersIndexRoute,
   mainJobsIndexRoute: mainJobsIndexRoute,
   mainProfileIndexRoute: mainProfileIndexRoute,
+  mainJobsIdApplicationRoute: mainJobsIdApplicationRoute,
+  mainJobsIdIndexRoute: mainJobsIdIndexRoute,
   mainJobsCreateIndexRoute: mainJobsCreateIndexRoute,
 }
 

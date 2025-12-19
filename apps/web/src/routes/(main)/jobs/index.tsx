@@ -10,6 +10,7 @@ import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
+import { JobApplication } from './-components/job-application';
 
 const CONTRACT_ADDRESS = '0x5FbDB2315678afecb367f032d93F642f64180aa3';
 
@@ -92,6 +93,11 @@ function RouteComponent() {
               >
                 View Details
               </Button>
+              <JobApplication
+                clientWallet={job.clientWallet}
+                jobDesc={job.description}
+                jobId={job.id}
+              />
               <Button
                 variant='destructive'
                 disabled={isDeletingJob}

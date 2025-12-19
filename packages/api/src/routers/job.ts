@@ -11,6 +11,23 @@ export const jobRouter = router({
       },
     });
   }),
+  createJobApplication: protectedProcedure
+    .input(
+      z.object({
+        jobId: z.string(),
+        coverLetter: z.string(),
+        freelancerWallet: z.string(),
+      }),
+    )
+    .mutation(({ input }) => {
+      return prisma.jobApplication.create({
+        data: {
+          coverLetter: input.coverLetter,
+          jobId: input.jobId,
+          freelancerWallet: input.freelancerWallet,
+        },
+      });
+    }),
   jobById: protectedProcedure
     .input(
       z.object({
@@ -25,6 +42,7 @@ export const jobRouter = router({
         include: {
           milestones: true,
           reviews: true,
+          jobApplications: true,
         },
       });
     }),
