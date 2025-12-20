@@ -57,8 +57,6 @@ function RouteComponent() {
     }),
   );
 
-  console.log('jjob', job);
-
   const { data: hash, writeContract, isPending } = useWriteContract();
 
   const {

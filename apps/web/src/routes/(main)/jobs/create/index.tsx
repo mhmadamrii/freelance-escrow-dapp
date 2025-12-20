@@ -200,8 +200,8 @@ function RouteComponent() {
   }, [isSuccess, receipt]);
 
   return (
-    <div className='container mx-auto py-10'>
-      <Card>
+    <div className='py-12'>
+      <Card className='max-w-6xl mx-auto'>
         <CardHeader>
           <CardTitle>Create a New Job</CardTitle>
           <CardDescription>
@@ -243,14 +243,14 @@ function RouteComponent() {
                   required
                 />
               </div>
-              <div className='space-y-2'>
+              <div className='space-y-2 w-full'>
                 <Label htmlFor='arbiter'>Arbiter Address</Label>
                 <Select
                   value={arbiterAddress}
                   onValueChange={setArbiterAddress}
                   required
                 >
-                  <SelectTrigger id='arbiter'>
+                  <SelectTrigger id='arbiter' className='w-full'>
                     <SelectValue placeholder='Select an arbiter' />
                   </SelectTrigger>
                   <SelectContent>

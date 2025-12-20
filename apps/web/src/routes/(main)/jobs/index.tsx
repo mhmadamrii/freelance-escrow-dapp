@@ -19,21 +19,16 @@ export const Route = createFileRoute('/(main)/jobs/')({
 });
 
 function RouteComponent() {
-  const queryClient = useQueryClient();
-
-  const trpc = useTRPC();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const trpc = useTRPC();
 
+  const { data: allJobs } = useQuery(trpc.job.allJobs.queryOptions());
   const { data: nextJobId } = useReadContract({
     address: CONTRACT_ADDRESS,
     abi: abi,
     functionName: 'nextJobId',
   });
-
-  console.log('nextJobId', nextJobId);
-
-  const { data: allJobs } = useQuery(trpc.job.allJobs.queryOptions());
-  console.log('allJobs', allJobs);
 
   const { mutate: deleteJob, isPending: isDeletingJob } = useMutation(
     trpc.job.deleteJob.mutationOptions({
@@ -48,7 +43,6 @@ function RouteComponent() {
     <div className='min-h-screen py-12 px-6'>
       <div className='max-w-6xl mx-auto'>
         <h1 className='text-4xl font-bold mb-8'>Open Jobs</h1>
-
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
           {allJobs?.map((job) => (
             <div

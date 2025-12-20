@@ -28,6 +28,7 @@ export function JobApplication({
   clientWallet: string;
 }) {
   const trpc = useTRPC();
+  const [open, setOpen] = useState(false);
   const [coverLetter, setCoverLetter] = useState('');
 
   const { address } = useAccount();
@@ -36,6 +37,7 @@ export function JobApplication({
     trpc.job.createJobApplication.mutationOptions({
       onSuccess: () => {
         toast.success('Job application created successfully!');
+        setOpen(false);
       },
     }),
   );
@@ -53,7 +55,7 @@ export function JobApplication({
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <form>
         <DialogTrigger asChild>
           <Button className='w-full' variant='outline'>
