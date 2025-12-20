@@ -28,16 +28,25 @@ export const jobRouter = router({
         },
       });
     }),
-  waitingFundingJobById: protectedProcedure
-    .input(z.object({ jobId: z.string() }))
+  updateJobStatus: protectedProcedure
+    .input(
+      z.object({
+        jobId: z.string(),
+        status: z.enum([
+          'WAITING_FUNDING',
+          'FUNDED',
+          'IN_PROGRESS',
+          'COMPLETED',
+        ]),
+      }),
+    )
     .mutation(async ({ input }) => {
-      console.log('trpc input', input);
       return await prisma.job.update({
         where: {
           id: input.jobId,
         },
         data: {
-          status: 'WAITING_FUNDING',
+          status: input.status,
         },
       });
     }),

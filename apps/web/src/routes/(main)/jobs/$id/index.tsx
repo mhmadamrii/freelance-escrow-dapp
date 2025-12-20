@@ -11,7 +11,7 @@ import { formatEther, parseEther } from 'viem';
 import { AssignFreelancer } from '../-components/assign-freelancer';
 import { Separator } from '@/components/ui/separator';
 import { useTRPC } from '@/utils/trpc';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { format, formatDistanceToNow } from 'date-fns';
 import { motion } from 'motion/react';
@@ -49,6 +49,7 @@ export const Route = createFileRoute('/(main)/jobs/$id/')({
 
 function RouteComponent() {
   const trpc = useTRPC();
+  const queryClient = useQueryClient();
 
   const { id } = Route.useParams();
   const { address } = useAccount();
@@ -57,6 +58,19 @@ function RouteComponent() {
   const { data: job } = useQuery(
     trpc.job?.jobById.queryOptions({
       jobId: id,
+    }),
+  );
+
+  const { mutate } = useMutation(
+    trpc.job.updateJobStatus.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries();
+        toast.success('Job funded successfully!');
+      },
+      onError: (err) => {
+        console.log('error', err);
+        toast.error('Error assigning freelancer');
+      },
     }),
   );
 
@@ -97,7 +111,10 @@ function RouteComponent() {
 
   useEffect(() => {
     if (isSuccessFundingJob) {
-      toast.success('Job funded successfully!');
+      mutate({
+        jobId: job?.id as string,
+        status: 'FUNDED',
+      });
     }
 
     if (isError) {

@@ -1,7 +1,7 @@
 import abi from '@/lib/abi.json';
 
 import { FREELANCE_ESCROW_ADDRESS } from '@/lib/constants';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTRPC } from '@/utils/trpc';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
@@ -32,6 +32,7 @@ export function AssignFreelancer({
   onChainId,
   freelancerAddress,
 }: AssignFreelancerProps) {
+  const queryClient = useQueryClient();
   const trpc = useTRPC();
   const [open, setOpen] = useState(false);
 
@@ -43,8 +44,9 @@ export function AssignFreelancer({
   } = useWriteContract();
 
   const { mutate } = useMutation(
-    trpc.job.waitingFundingJobById.mutationOptions({
+    trpc.job.updateJobStatus.mutationOptions({
       onSuccess: () => {
+        queryClient.invalidateQueries();
         toast.success('Job is waiting to be funded!');
       },
       onError: (err) => {
@@ -62,9 +64,7 @@ export function AssignFreelancer({
     if (isSuccess) {
       toast.success('Freelancer assigned successfully!');
       setOpen(false);
-      mutate({ jobId });
-      // Optional: Refresh page or invalidate queries
-      // window.location.reload();
+      mutate({ jobId, status: 'WAITING_FUNDING' });
     }
   }, [isSuccess]);
 

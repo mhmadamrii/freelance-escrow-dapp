@@ -265,7 +265,7 @@ function RouteComponent() {
             </div>
 
             <div className='space-y-2'>
-              <Label htmlFor='totalAmount'>Total Amount</Label>
+              <Label htmlFor='totalAmount'>Total Amount (in wei)</Label>
               <Input
                 id='totalAmount'
                 type='number'
