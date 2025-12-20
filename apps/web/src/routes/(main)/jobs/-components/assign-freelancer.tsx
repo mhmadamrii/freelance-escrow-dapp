@@ -7,7 +7,11 @@ import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
+import {
+  useAccount,
+  useWaitForTransactionReceipt,
+  useWriteContract,
+} from 'wagmi';
 
 import {
   AlertDialog,
@@ -25,16 +29,22 @@ interface AssignFreelancerProps {
   jobId: string;
   onChainId: string;
   freelancerAddress: string;
+  applicationId: string;
+  freelancerWallet: string;
 }
 
 export function AssignFreelancer({
   jobId,
   onChainId,
   freelancerAddress,
+  applicationId,
+  freelancerWallet,
 }: AssignFreelancerProps) {
   const queryClient = useQueryClient();
   const trpc = useTRPC();
   const [open, setOpen] = useState(false);
+
+  const { address } = useAccount();
 
   const {
     data: hash,
@@ -44,7 +54,7 @@ export function AssignFreelancer({
   } = useWriteContract();
 
   const { mutate } = useMutation(
-    trpc.job.updateJobStatus.mutationOptions({
+    trpc.job.assignFreelancerWalletToJob.mutationOptions({
       onSuccess: () => {
         queryClient.invalidateQueries();
         toast.success('Job is waiting to be funded!');
@@ -64,7 +74,7 @@ export function AssignFreelancer({
     if (isSuccess) {
       toast.success('Freelancer assigned successfully!');
       setOpen(false);
-      mutate({ jobId, status: 'WAITING_FUNDING' });
+      mutate({ jobId, applicationId, freelancerWallet });
     }
   }, [isSuccess]);
 

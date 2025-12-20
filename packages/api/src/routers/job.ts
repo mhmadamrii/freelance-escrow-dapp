@@ -1,6 +1,9 @@
 import * as z from 'zod';
 import prisma from '@onwork/db';
 
+import type { AppRouter } from '.';
+import type { inferRouterOutputs } from '@trpc/server';
+
 import { protectedProcedure, router } from '..';
 
 export const jobRouter = router({
@@ -50,6 +53,50 @@ export const jobRouter = router({
         },
       });
     }),
+  assignFreelancerWalletToJob: protectedProcedure
+    .input(
+      z.object({
+        jobId: z.string(),
+        applicationId: z.string(),
+        freelancerWallet: z.string(),
+      }),
+    )
+    .mutation(({ input }) => {
+      return prisma.$transaction([
+        prisma.job.update({
+          where: { id: input.jobId },
+          data: {
+            freelancerWallet: input.freelancerWallet,
+            status: 'WAITING_FUNDING',
+          },
+        }),
+
+        prisma.jobApplication.update({
+          where: {
+            id: input.applicationId,
+          },
+          data: {
+            status: 'ACCEPTED',
+          },
+        }),
+      ]);
+    }),
+  updateMilestones: protectedProcedure
+    .input(
+      z.object({
+        milestoneId: z.string(),
+        status: z.enum(['IN_PROGRESS', 'COMPLETED']),
+      }),
+    )
+    .mutation(({ input }) => {
+      return prisma.milestone.update({
+        where: {
+          id: input.milestoneId,
+        },
+        data: {},
+      });
+    }),
+
   jobById: protectedProcedure
     .input(
       z.object({
@@ -74,7 +121,7 @@ export const jobRouter = router({
         jobId: z.string(),
       }),
     )
-    .mutation(({ ctx, input }) => {
+    .mutation(({ input }) => {
       return prisma.job.delete({
         where: {
           id: input.jobId,
@@ -94,7 +141,7 @@ export const jobRouter = router({
         totalAmount: z.string(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       return prisma.job.create({
         data: {
           // onChainId: BigInt(input.onChainId),
@@ -111,3 +158,6 @@ export const jobRouter = router({
       });
     }),
 });
+
+type RouterOutputs = inferRouterOutputs<AppRouter>;
+export type JobByIdOutput = RouterOutputs['job']['jobById'];

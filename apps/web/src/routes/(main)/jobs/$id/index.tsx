@@ -1,5 +1,5 @@
 import abi from '@/lib/abi.json';
-
+import { JobMilestones } from '../-components/job-milestones';
 import { shortenAddress } from '@/lib/utils';
 import { StatusBadge } from '../-components/status-badge';
 import { Badge } from '@/components/ui/badge';
@@ -85,8 +85,7 @@ function RouteComponent() {
   const handleFundJob = () => {
     try {
       if (job?.jobApplications.length == 0) {
-        toast.error('No applications found');
-        return;
+        return toast.error('No applications found');
       }
 
       writeContract({
@@ -184,34 +183,7 @@ function RouteComponent() {
               <CheckCircle2 className='h-5 w-5' /> Milestones
             </h2>
             <div className='space-y-4'>
-              {(job?.milestones || []).map((milestone, index) => (
-                <Card
-                  key={milestone.id}
-                  className='overflow-hidden border-l-4 border-l-primary/50'
-                >
-                  <CardContent className='p-6 flex items-center justify-between gap-4'>
-                    <div className='space-y-1'>
-                      <h3 className='font-semibold'>Milestone {index + 1}</h3>
-                      <p className='text-sm text-muted-foreground truncate max-w-md'>
-                        {milestone.descriptionHash}
-                      </p>
-                    </div>
-                    <div className='text-right'>
-                      <p className='text-xl font-bold'>
-                        {formatEther(BigInt(milestone.amount))}{' '}
-                        {job?.tokenAddress ? 'TOKEN' : 'ETH'}
-                      </p>
-                      <Badge
-                        variant={
-                          milestone.submissionHash ? 'default' : 'secondary'
-                        }
-                      >
-                        {milestone.submissionHash ? 'Submitted' : 'Pending'}
-                      </Badge>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+              <JobMilestones job={job} />
             </div>
           </section>
           {isClient && (job?.jobApplications || []).length > 0 && (
@@ -259,6 +231,8 @@ function RouteComponent() {
                           jobId={job?.id}
                           onChainId={job?.onChainId?.toString() ?? '0'}
                           freelancerAddress={app.freelancerWallet}
+                          applicationId={app.id}
+                          freelancerWallet={app.freelancerWallet}
                         />
                       )}
                     </CardFooter>
