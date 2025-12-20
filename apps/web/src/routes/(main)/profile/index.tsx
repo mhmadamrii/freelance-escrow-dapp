@@ -1,4 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { shortenAddress } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { useDisconnect } from 'wagmi';
@@ -256,10 +257,4 @@ function RouteComponent() {
       </Tabs>
     </div>
   );
-}
-
-function shortenAddress(address: string) {
-  if (!address) return '';
-  if (address.length < 10) return address;
-  return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }

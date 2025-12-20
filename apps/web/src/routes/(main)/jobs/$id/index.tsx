@@ -1,5 +1,7 @@
 import abi from '@/lib/abi.json';
 
+import { shortenAddress } from '@/lib/utils';
+import { StatusBadge } from '../-components/status-badge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useEffect } from 'react';
@@ -8,11 +10,10 @@ import { FREELANCE_ESCROW_ADDRESS } from '@/lib/constants';
 import { formatEther, parseEther } from 'viem';
 import { AssignFreelancer } from '../-components/assign-freelancer';
 import { Separator } from '@/components/ui/separator';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useTRPC } from '@/utils/trpc';
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
-import { formatDistanceToNow } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
 import { motion } from 'motion/react';
 
 import {
@@ -51,19 +52,18 @@ function RouteComponent() {
 
   const { id } = Route.useParams();
   const { address } = useAccount();
+  const { data: hash, writeContract, isPending } = useWriteContract();
+
   const { data: job } = useQuery(
     trpc.job?.jobById.queryOptions({
       jobId: id,
     }),
   );
 
-  const { data: hash, writeContract, isPending } = useWriteContract();
-
   const {
     isLoading: isFundingJob,
     isSuccess: isSuccessFundingJob,
     isError,
-    error,
   } = useWaitForTransactionReceipt({
     hash,
   });
@@ -90,6 +90,7 @@ function RouteComponent() {
 
   const isClient = job?.clientWallet.toLowerCase() === address?.toLowerCase();
   const isFreelancer = job?.freelancerWallet?.toLowerCase() === address?.toLowerCase(); // prettier-ignore
+
   const hasApplied = (job?.jobApplications || []).some(
     (app) => app.freelancerWallet.toLowerCase() === address?.toLowerCase(),
   );
@@ -134,7 +135,7 @@ function RouteComponent() {
               {job?.title}
             </h1>
             <div className='flex flex-wrap items-center gap-4'>
-              <StatusBadge status={job?.status} />
+              <StatusBadge status={job?.status as string} />
               <div className='flex items-center gap-1 text-sm text-muted-foreground'>
                 <Clock className='h-4 w-4' />
                 <span>Posted {formatDistanceToNow(new Date())} ago</span>
@@ -315,7 +316,7 @@ function RouteComponent() {
               <div className='flex justify-between items-center py-2 border-b'>
                 <span className='text-sm text-muted-foreground'>Arbiter</span>
                 <span className='font-mono text-sm'>
-                  {shortenAddress(job?.arbiteri ?? '')}
+                  {shortenAddress(job?.arbiter ?? '')}
                 </span>
               </div>
               <div className='flex justify-between items-center py-2 border-b'>
@@ -328,7 +329,7 @@ function RouteComponent() {
               <div className='flex justify-between items-center py-2'>
                 <span className='text-sm text-muted-foreground'>Created</span>
                 <span className='text-sm'>
-                  {new Date(job?.createdAt).toLocaleDateString()}
+                  {format(new Date(), 'MMM dd, yyyy')}
                 </span>
               </div>
             </CardContent>
@@ -337,58 +338,4 @@ function RouteComponent() {
       </motion.div>
     </div>
   );
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const styles: Record<string, string> = {
-    CREATED:
-      'bg-green-500/15 text-green-600 dark:text-green-400 hover:bg-green-500/25 border-green-500/20',
-    FUNDED:
-      'bg-blue-500/15 text-blue-600 dark:text-blue-400 hover:bg-blue-500/25 border-blue-500/20',
-    IN_PROGRESS:
-      'bg-purple-500/15 text-purple-600 dark:text-purple-400 hover:bg-purple-500/25 border-purple-500/20',
-    COMPLETED:
-      'bg-gray-500/15 text-gray-600 dark:text-gray-400 hover:bg-gray-500/25 border-gray-500/20',
-    DISPUTED:
-      'bg-red-500/15 text-red-600 dark:text-red-400 hover:bg-red-500/25 border-red-500/20',
-  };
-
-  return (
-    <Badge
-      variant='outline'
-      className={`px-3 py-1 capitalize ${styles[status] || ''}`}
-    >
-      {status?.replace('_', ' ').toLowerCase()}
-    </Badge>
-  );
-}
-
-function JobSkeleton() {
-  return (
-    <div className='container mx-auto max-w-6xl px-4 py-8 space-y-8'>
-      <div className='space-y-4'>
-        <Skeleton className='h-4 w-32' />
-        <Skeleton className='h-12 w-3/4' />
-        <div className='flex gap-4'>
-          <Skeleton className='h-6 w-24' />
-          <Skeleton className='h-6 w-32' />
-        </div>
-      </div>
-      <div className='grid gap-8 lg:grid-cols-3'>
-        <div className='lg:col-span-2 space-y-8'>
-          <Skeleton className='h-40 w-full' />
-          <Skeleton className='h-64 w-full' />
-        </div>
-        <div className='space-y-6'>
-          <Skeleton className='h-48 w-full' />
-          <Skeleton className='h-64 w-full' />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function shortenAddress(address: string) {
-  if (!address) return '';
-  return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }

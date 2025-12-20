@@ -1,0 +1,25 @@
+import { Badge } from '@/components/ui/badge';
+
+export function StatusBadge({ status }: { status: string }) {
+  const styles: Record<string, string> = {
+    CREATED:
+      'bg-green-500/15 text-green-600 dark:text-green-400 hover:bg-green-500/25 border-green-500/20',
+    FUNDED:
+      'bg-blue-500/15 text-blue-600 dark:text-blue-400 hover:bg-blue-500/25 border-blue-500/20',
+    IN_PROGRESS:
+      'bg-purple-500/15 text-purple-600 dark:text-purple-400 hover:bg-purple-500/25 border-purple-500/20',
+    COMPLETED:
+      'bg-gray-500/15 text-gray-600 dark:text-gray-400 hover:bg-gray-500/25 border-gray-500/20',
+    DISPUTED:
+      'bg-red-500/15 text-red-600 dark:text-red-400 hover:bg-red-500/25 border-red-500/20',
+  };
+
+  return (
+    <Badge
+      variant='outline'
+      className={`px-3 py-1 capitalize ${styles[status] || ''}`}
+    >
+      {status?.replace('_', ' ').toLowerCase()}
+    </Badge>
+  );
+}
