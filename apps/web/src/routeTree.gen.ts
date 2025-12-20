@@ -18,7 +18,6 @@ import { Route as mainFreelancersIndexRouteImport } from './routes/(main)/freela
 import { Route as mainDashboardIndexRouteImport } from './routes/(main)/dashboard/index'
 import { Route as mainJobsCreateIndexRouteImport } from './routes/(main)/jobs/create/index'
 import { Route as mainJobsIdIndexRouteImport } from './routes/(main)/jobs/$id/index'
-import { Route as mainJobsIdApplicationRouteImport } from './routes/(main)/jobs/$id/application'
 
 const mainRouteRoute = mainRouteRouteImport.update({
   id: '/(main)',
@@ -64,11 +63,6 @@ const mainJobsIdIndexRoute = mainJobsIdIndexRouteImport.update({
   path: '/jobs/$id/',
   getParentRoute: () => mainRouteRoute,
 } as any)
-const mainJobsIdApplicationRoute = mainJobsIdApplicationRouteImport.update({
-  id: '/jobs/$id/application',
-  path: '/jobs/$id/application',
-  getParentRoute: () => mainRouteRoute,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/auth': typeof publicAuthRoute
@@ -77,7 +71,6 @@ export interface FileRoutesByFullPath {
   '/freelancers': typeof mainFreelancersIndexRoute
   '/jobs': typeof mainJobsIndexRoute
   '/profile': typeof mainProfileIndexRoute
-  '/jobs/$id/application': typeof mainJobsIdApplicationRoute
   '/jobs/$id': typeof mainJobsIdIndexRoute
   '/jobs/create': typeof mainJobsCreateIndexRoute
 }
@@ -88,7 +81,6 @@ export interface FileRoutesByTo {
   '/freelancers': typeof mainFreelancersIndexRoute
   '/jobs': typeof mainJobsIndexRoute
   '/profile': typeof mainProfileIndexRoute
-  '/jobs/$id/application': typeof mainJobsIdApplicationRoute
   '/jobs/$id': typeof mainJobsIdIndexRoute
   '/jobs/create': typeof mainJobsCreateIndexRoute
 }
@@ -101,7 +93,6 @@ export interface FileRoutesById {
   '/(main)/freelancers/': typeof mainFreelancersIndexRoute
   '/(main)/jobs/': typeof mainJobsIndexRoute
   '/(main)/profile/': typeof mainProfileIndexRoute
-  '/(main)/jobs/$id/application': typeof mainJobsIdApplicationRoute
   '/(main)/jobs/$id/': typeof mainJobsIdIndexRoute
   '/(main)/jobs/create/': typeof mainJobsCreateIndexRoute
 }
@@ -114,7 +105,6 @@ export interface FileRouteTypes {
     | '/freelancers'
     | '/jobs'
     | '/profile'
-    | '/jobs/$id/application'
     | '/jobs/$id'
     | '/jobs/create'
   fileRoutesByTo: FileRoutesByTo
@@ -125,7 +115,6 @@ export interface FileRouteTypes {
     | '/freelancers'
     | '/jobs'
     | '/profile'
-    | '/jobs/$id/application'
     | '/jobs/$id'
     | '/jobs/create'
   id:
@@ -137,7 +126,6 @@ export interface FileRouteTypes {
     | '/(main)/freelancers/'
     | '/(main)/jobs/'
     | '/(main)/profile/'
-    | '/(main)/jobs/$id/application'
     | '/(main)/jobs/$id/'
     | '/(main)/jobs/create/'
   fileRoutesById: FileRoutesById
@@ -213,13 +201,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof mainJobsIdIndexRouteImport
       parentRoute: typeof mainRouteRoute
     }
-    '/(main)/jobs/$id/application': {
-      id: '/(main)/jobs/$id/application'
-      path: '/jobs/$id/application'
-      fullPath: '/jobs/$id/application'
-      preLoaderRoute: typeof mainJobsIdApplicationRouteImport
-      parentRoute: typeof mainRouteRoute
-    }
   }
 }
 
@@ -228,7 +209,6 @@ interface mainRouteRouteChildren {
   mainFreelancersIndexRoute: typeof mainFreelancersIndexRoute
   mainJobsIndexRoute: typeof mainJobsIndexRoute
   mainProfileIndexRoute: typeof mainProfileIndexRoute
-  mainJobsIdApplicationRoute: typeof mainJobsIdApplicationRoute
   mainJobsIdIndexRoute: typeof mainJobsIdIndexRoute
   mainJobsCreateIndexRoute: typeof mainJobsCreateIndexRoute
 }
@@ -238,7 +218,6 @@ const mainRouteRouteChildren: mainRouteRouteChildren = {
   mainFreelancersIndexRoute: mainFreelancersIndexRoute,
   mainJobsIndexRoute: mainJobsIndexRoute,
   mainProfileIndexRoute: mainProfileIndexRoute,
-  mainJobsIdApplicationRoute: mainJobsIdApplicationRoute,
   mainJobsIdIndexRoute: mainJobsIdIndexRoute,
   mainJobsCreateIndexRoute: mainJobsCreateIndexRoute,
 }

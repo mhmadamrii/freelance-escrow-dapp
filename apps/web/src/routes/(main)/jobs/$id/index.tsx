@@ -5,12 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
 import { FREELANCE_ESCROW_ADDRESS } from '@/lib/constants';
-import { formatEther } from 'viem';
-import {
-  useAccount,
-  useWaitForTransactionReceipt,
-  useWriteContract,
-} from 'wagmi';
+import { formatEther, parseEther } from 'viem';
 import { AssignFreelancer } from '../-components/assign-freelancer';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -19,6 +14,12 @@ import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { formatDistanceToNow } from 'date-fns';
 import { motion } from 'motion/react';
+
+import {
+  useAccount,
+  useWaitForTransactionReceipt,
+  useWriteContract,
+} from 'wagmi';
 
 import {
   Card,
@@ -50,12 +51,13 @@ function RouteComponent() {
 
   const { id } = Route.useParams();
   const { address } = useAccount();
-
-  const { data: job, isLoading } = useQuery(
-    trpc.job.jobById.queryOptions({
+  const { data: job } = useQuery(
+    trpc.job?.jobById.queryOptions({
       jobId: id,
     }),
   );
+
+  console.log('jjob', job);
 
   const { data: hash, writeContract, isPending } = useWriteContract();
 
@@ -63,42 +65,34 @@ function RouteComponent() {
     isLoading: isFundingJob,
     isSuccess: isSuccessFundingJob,
     isError,
+    error,
   } = useWaitForTransactionReceipt({
     hash,
   });
 
   const handleFundJob = () => {
     try {
+      if (job?.jobApplications.length == 0) {
+        toast.error('No applications found');
+        return;
+      }
+
       writeContract({
         address: FREELANCE_ESCROW_ADDRESS as `0x${string}`,
         abi: abi,
         functionName: 'fundJob',
-        args: [BigInt(job?.onChainId?.toString() as string)],
-        value: BigInt(job?.totalAmount as string),
+        args: [BigInt(job?.onChainId?.toString() ?? '0')],
+        value: parseEther(job?.totalAmount as string),
       });
-    } catch (error) {}
+    } catch (error) {
+      console.error('Error funding job:', error);
+      toast.error('Failed to fund job?. Please try again.');
+    }
   };
 
-  if (isLoading) {
-    return <JobSkeleton />;
-  }
-
-  if (!job) {
-    return (
-      <div className='flex h-[50vh] flex-col items-center justify-center gap-4'>
-        <h2 className='text-2xl font-bold text-muted-foreground'>
-          Job not found
-        </h2>
-        <Button variant='outline' onClick={() => window.history.back()}>
-          Go Back
-        </Button>
-      </div>
-    );
-  }
-
-  const isClient = job.clientWallet.toLowerCase() === address?.toLowerCase();
-  const isFreelancer = job.freelancerWallet?.toLowerCase() === address?.toLowerCase(); // prettier-ignore
-  const hasApplied = (job.jobApplications || []).some(
+  const isClient = job?.clientWallet.toLowerCase() === address?.toLowerCase();
+  const isFreelancer = job?.freelancerWallet?.toLowerCase() === address?.toLowerCase(); // prettier-ignore
+  const hasApplied = (job?.jobApplications || []).some(
     (app) => app.freelancerWallet.toLowerCase() === address?.toLowerCase(),
   );
 
@@ -108,12 +102,22 @@ function RouteComponent() {
     }
 
     if (isError) {
-      toast.success('Job funded successfully!');
+      toast.error('Failed to fund job?. Transaction was rejected or failed.');
     }
   }, [isSuccessFundingJob, isError]);
 
   return (
     <div className='container mx-auto max-w-6xl px-4 py-8'>
+      {!job && (
+        <div className='flex h-[50vh] flex-col items-center justify-center gap-4'>
+          <h2 className='text-2xl font-bold text-muted-foreground'>
+            Job not found
+          </h2>
+          <Button variant='outline' onClick={() => window.history.back()}>
+            Go Back
+          </Button>
+        </div>
+      )}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -126,20 +130,18 @@ function RouteComponent() {
               <Briefcase className='h-4 w-4' />
               <span>Jobs</span>
               <span>/</span>
-              <span className='truncate max-w-50'>{job.id}</span>
+              <span className='truncate max-w-50'>{job?.id}</span>
             </div>
             <h1 className='text-4xl font-extrabold tracking-tight lg:text-5xl'>
-              {job.title}
+              {job?.title}
             </h1>
             <div className='flex flex-wrap items-center gap-4'>
-              <StatusBadge status={job.status} />
+              <StatusBadge status={job?.status} />
               <div className='flex items-center gap-1 text-sm text-muted-foreground'>
                 <Clock className='h-4 w-4' />
-                <span>
-                  Posted {formatDistanceToNow(new Date(job.createdAt))} ago
-                </span>
+                <span>Posted {formatDistanceToNow(new Date())} ago</span>
               </div>
-              {job.tokenAddress ? (
+              {job?.tokenAddress ? (
                 <Badge variant='outline' className='gap-1'>
                   <Coins className='h-3 w-3' /> Token Payment
                 </Badge>
@@ -150,28 +152,23 @@ function RouteComponent() {
               )}
             </div>
           </div>
-
           <Separator />
-
-          {/* Description */}
           <section className='space-y-4'>
             <h2 className='text-2xl font-semibold tracking-tight flex items-center gap-2'>
               <FileText className='h-5 w-5' /> Description
             </h2>
             <div className='prose prose-neutral dark:prose-invert max-w-none'>
               <p className='whitespace-pre-wrap leading-relaxed text-lg text-muted-foreground'>
-                {job.description}
+                {job?.description}
               </p>
             </div>
           </section>
-
-          {/* Milestones */}
           <section className='space-y-6'>
             <h2 className='text-2xl font-semibold tracking-tight flex items-center gap-2'>
               <CheckCircle2 className='h-5 w-5' /> Milestones
             </h2>
             <div className='space-y-4'>
-              {(job.milestones || []).map((milestone, index) => (
+              {(job?.milestones || []).map((milestone, index) => (
                 <Card
                   key={milestone.id}
                   className='overflow-hidden border-l-4 border-l-primary/50'
@@ -186,7 +183,7 @@ function RouteComponent() {
                     <div className='text-right'>
                       <p className='text-xl font-bold'>
                         {formatEther(BigInt(milestone.amount))}{' '}
-                        {job.tokenAddress ? 'TOKEN' : 'ETH'}
+                        {job?.tokenAddress ? 'TOKEN' : 'ETH'}
                       </p>
                       <Badge
                         variant={
@@ -201,20 +198,18 @@ function RouteComponent() {
               ))}
             </div>
           </section>
-
-          {/* Applications (Client Only) */}
-          {isClient && (job.jobApplications || []).length > 0 && (
+          {isClient && (job?.jobApplications || []).length > 0 && (
             <section className='space-y-6'>
               <div className='flex items-center justify-between'>
                 <h2 className='text-2xl font-semibold tracking-tight flex items-center gap-2'>
                   <User className='h-5 w-5' /> Applications
                 </h2>
                 <Badge variant='secondary'>
-                  {(job.jobApplications || []).length} Applicants
+                  {(job?.jobApplications || []).length} Applicants
                 </Badge>
               </div>
               <div className='grid gap-4 sm:grid-cols-2'>
-                {(job.jobApplications || []).map((app) => (
+                {(job?.jobApplications || []).map((app) => (
                   <Card
                     key={app.id}
                     className='group hover:shadow-md transition-all'
@@ -243,10 +238,10 @@ function RouteComponent() {
                       </p>
                     </CardContent>
                     <CardFooter>
-                      {job.status === 'CREATED' && (
+                      {job?.status === 'CREATED' && (
                         <AssignFreelancer
-                          jobId={job.id}
-                          onChainId={job.onChainId?.toString() ?? '0'}
+                          jobId={job?.id}
+                          onChainId={job?.onChainId?.toString() ?? '0'}
                           freelancerAddress={app.freelancerWallet}
                         />
                       )}
@@ -257,7 +252,6 @@ function RouteComponent() {
             </section>
           )}
         </div>
-
         <div className='space-y-6'>
           <Card className='bg-primary/5 border-primary/20 overflow-hidden relative'>
             <div className='absolute top-0 right-0 p-4 opacity-10'>
@@ -266,15 +260,16 @@ function RouteComponent() {
             <CardHeader>
               <CardDescription>Total Budget</CardDescription>
               <CardTitle className='text-4xl font-bold text-primary'>
-                {formatEther(BigInt(job.totalAmount))}{' '}
+                {formatEther(BigInt(job?.totalAmount ?? 0))}{' '}
                 <span className='text-lg font-normal text-muted-foreground'>
-                  {job.tokenAddress ? 'TOKEN' : 'ETH'}
+                  {job?.tokenAddress ? 'TOKEN' : 'ETH'}
                 </span>
               </CardTitle>
             </CardHeader>
             <CardFooter className='flex-col gap-3'>
               {isClient ? (
-                job.status === 'CREATED' || job.status === 'WAITING_FUNDING' ? (
+                job?.status === 'CREATED' ||
+                job?.status === 'WAITING_FUNDING' ? (
                   <Button
                     disabled={isPending || isFundingJob}
                     onClick={handleFundJob}
@@ -305,8 +300,6 @@ function RouteComponent() {
               )}
             </CardFooter>
           </Card>
-
-          {/* Job Details Card */}
           <Card>
             <CardHeader>
               <CardTitle className='text-lg'>Job Details</CardTitle>
@@ -317,14 +310,14 @@ function RouteComponent() {
                 <div className='flex items-center gap-2'>
                   <div className='h-6 w-6 rounded-full bg-linear-to-br from-blue-500 to-purple-500' />
                   <span className='font-mono text-sm'>
-                    {shortenAddress(job.clientWallet)}
+                    {shortenAddress(job?.clientWallet ?? '')}
                   </span>
                 </div>
               </div>
               <div className='flex justify-between items-center py-2 border-b'>
                 <span className='text-sm text-muted-foreground'>Arbiter</span>
                 <span className='font-mono text-sm'>
-                  {shortenAddress(job.arbiter)}
+                  {shortenAddress(job?.arbiteri ?? '')}
                 </span>
               </div>
               <div className='flex justify-between items-center py-2 border-b'>
@@ -337,7 +330,7 @@ function RouteComponent() {
               <div className='flex justify-between items-center py-2'>
                 <span className='text-sm text-muted-foreground'>Created</span>
                 <span className='text-sm'>
-                  {new Date(job.createdAt).toLocaleDateString()}
+                  {new Date(job?.createdAt).toLocaleDateString()}
                 </span>
               </div>
             </CardContent>
@@ -367,7 +360,7 @@ function StatusBadge({ status }: { status: string }) {
       variant='outline'
       className={`px-3 py-1 capitalize ${styles[status] || ''}`}
     >
-      {status.replace('_', ' ').toLowerCase()}
+      {status?.replace('_', ' ').toLowerCase()}
     </Badge>
   );
 }
