@@ -18,6 +18,7 @@ import { Route as mainFreelancersIndexRouteImport } from './routes/(main)/freela
 import { Route as mainDashboardIndexRouteImport } from './routes/(main)/dashboard/index'
 import { Route as mainJobsCreateIndexRouteImport } from './routes/(main)/jobs/create/index'
 import { Route as mainJobsIdIndexRouteImport } from './routes/(main)/jobs/$id/index'
+import { Route as mainJobsIdMilestonesIndexRouteImport } from './routes/(main)/jobs/$id/milestones/index'
 
 const mainRouteRoute = mainRouteRouteImport.update({
   id: '/(main)',
@@ -63,6 +64,12 @@ const mainJobsIdIndexRoute = mainJobsIdIndexRouteImport.update({
   path: '/jobs/$id/',
   getParentRoute: () => mainRouteRoute,
 } as any)
+const mainJobsIdMilestonesIndexRoute =
+  mainJobsIdMilestonesIndexRouteImport.update({
+    id: '/jobs/$id/milestones/',
+    path: '/jobs/$id/milestones/',
+    getParentRoute: () => mainRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/auth': typeof publicAuthRoute
@@ -73,6 +80,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof mainProfileIndexRoute
   '/jobs/$id': typeof mainJobsIdIndexRoute
   '/jobs/create': typeof mainJobsCreateIndexRoute
+  '/jobs/$id/milestones': typeof mainJobsIdMilestonesIndexRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof publicAuthRoute
@@ -83,6 +91,7 @@ export interface FileRoutesByTo {
   '/profile': typeof mainProfileIndexRoute
   '/jobs/$id': typeof mainJobsIdIndexRoute
   '/jobs/create': typeof mainJobsCreateIndexRoute
+  '/jobs/$id/milestones': typeof mainJobsIdMilestonesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -95,6 +104,7 @@ export interface FileRoutesById {
   '/(main)/profile/': typeof mainProfileIndexRoute
   '/(main)/jobs/$id/': typeof mainJobsIdIndexRoute
   '/(main)/jobs/create/': typeof mainJobsCreateIndexRoute
+  '/(main)/jobs/$id/milestones/': typeof mainJobsIdMilestonesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -107,6 +117,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/jobs/$id'
     | '/jobs/create'
+    | '/jobs/$id/milestones'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
@@ -117,6 +128,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/jobs/$id'
     | '/jobs/create'
+    | '/jobs/$id/milestones'
   id:
     | '__root__'
     | '/(main)'
@@ -128,6 +140,7 @@ export interface FileRouteTypes {
     | '/(main)/profile/'
     | '/(main)/jobs/$id/'
     | '/(main)/jobs/create/'
+    | '/(main)/jobs/$id/milestones/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -201,6 +214,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof mainJobsIdIndexRouteImport
       parentRoute: typeof mainRouteRoute
     }
+    '/(main)/jobs/$id/milestones/': {
+      id: '/(main)/jobs/$id/milestones/'
+      path: '/jobs/$id/milestones'
+      fullPath: '/jobs/$id/milestones'
+      preLoaderRoute: typeof mainJobsIdMilestonesIndexRouteImport
+      parentRoute: typeof mainRouteRoute
+    }
   }
 }
 
@@ -211,6 +231,7 @@ interface mainRouteRouteChildren {
   mainProfileIndexRoute: typeof mainProfileIndexRoute
   mainJobsIdIndexRoute: typeof mainJobsIdIndexRoute
   mainJobsCreateIndexRoute: typeof mainJobsCreateIndexRoute
+  mainJobsIdMilestonesIndexRoute: typeof mainJobsIdMilestonesIndexRoute
 }
 
 const mainRouteRouteChildren: mainRouteRouteChildren = {
@@ -220,6 +241,7 @@ const mainRouteRouteChildren: mainRouteRouteChildren = {
   mainProfileIndexRoute: mainProfileIndexRoute,
   mainJobsIdIndexRoute: mainJobsIdIndexRoute,
   mainJobsCreateIndexRoute: mainJobsCreateIndexRoute,
+  mainJobsIdMilestonesIndexRoute: mainJobsIdMilestonesIndexRoute,
 }
 
 const mainRouteRouteWithChildren = mainRouteRoute._addFileChildren(

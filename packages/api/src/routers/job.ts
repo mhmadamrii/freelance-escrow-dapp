@@ -85,7 +85,7 @@ export const jobRouter = router({
     .input(
       z.object({
         milestoneId: z.string(),
-        status: z.enum(['IN_PROGRESS', 'COMPLETED']),
+        status: z.enum(['IN_PROGRESS', 'COMPLETED', 'SUBMITTED']),
       }),
     )
     .mutation(({ input }) => {
@@ -93,7 +93,9 @@ export const jobRouter = router({
         where: {
           id: input.milestoneId,
         },
-        data: {},
+        data: {
+          status: input.status,
+        },
       });
     }),
 
@@ -154,6 +156,18 @@ export const jobRouter = router({
           totalAmount: input.totalAmount,
           title: input.title,
           description: input.description,
+        },
+      });
+    }),
+  getMilestonesByJobId: protectedProcedure
+    .input(z.object({ jobId: z.string() }))
+    .query(({ input }) => {
+      return prisma.job.findFirst({
+        where: {
+          id: input.jobId,
+        },
+        include: {
+          milestones: true,
         },
       });
     }),

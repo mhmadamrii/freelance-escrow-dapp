@@ -26,6 +26,13 @@ enum ApplicationStatus {
   REJECTED
 }
 
+enum MilestoneStatus {
+  PENDING
+  IN_PROGRESS
+  SUBMITTED
+  COMPLETED
+}
+
 model Job {
   id String @id @default(uuid())
 
@@ -63,9 +70,10 @@ model Milestone {
 
   jobId           String
   onChainIndex    Int
-  amount          Decimal @db.Decimal(38, 0)
+  amount          Decimal         @db.Decimal(38, 0)
   descriptionHash String
   submissionHash  String?
+  status          MilestoneStatus @default(PENDING)
 
   job Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
 

@@ -12,7 +12,7 @@ import { AssignFreelancer } from '../-components/assign-freelancer';
 import { Separator } from '@/components/ui/separator';
 import { useTRPC } from '@/utils/trpc';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, Link } from '@tanstack/react-router';
 import { format, formatDistanceToNow } from 'date-fns';
 import { motion } from 'motion/react';
 
@@ -60,6 +60,8 @@ function RouteComponent() {
       jobId: id,
     }),
   );
+
+  console.log('job', job);
 
   const { mutate } = useMutation(
     trpc.job.updateJobStatus.mutationOptions({
@@ -179,9 +181,20 @@ function RouteComponent() {
             </div>
           </section>
           <section className='space-y-6'>
-            <h2 className='text-2xl font-semibold tracking-tight flex items-center gap-2'>
-              <CheckCircle2 className='h-5 w-5' /> Milestones
-            </h2>
+            <div className='flex justify-between items-center'>
+              <h2 className='text-2xl font-semibold tracking-tight flex items-center gap-2'>
+                <CheckCircle2 className='h-5 w-5' /> Milestones
+              </h2>
+              <Link
+                className='hover:underline'
+                to={`/jobs/$id/milestones`}
+                params={{
+                  id: job?.id as string,
+                }}
+              >
+                All Milestones
+              </Link>
+            </div>
             <div className='space-y-4'>
               <JobMilestones job={job} />
             </div>
