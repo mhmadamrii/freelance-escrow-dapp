@@ -40,6 +40,7 @@ export const jobRouter = router({
           'FUNDED',
           'IN_PROGRESS',
           'COMPLETED',
+          'DISPUTED',
         ]),
       }),
     )

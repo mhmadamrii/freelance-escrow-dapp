@@ -1,12 +1,6 @@
 import { Header } from '@/components/header';
 import { authClient } from '@/lib/auth-client';
-import {
-  createFileRoute,
-  Link,
-  Outlet,
-  redirect,
-} from '@tanstack/react-router';
-import { useEffect } from 'react';
+import { createFileRoute, Link, Outlet } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/(main)')({
   component: RouteComponent,
