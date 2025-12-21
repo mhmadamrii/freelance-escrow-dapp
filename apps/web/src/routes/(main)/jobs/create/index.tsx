@@ -49,7 +49,9 @@ function RouteComponent() {
   const [tokenAddress, setTokenAddress] = useState('');
   const [arbiterAddress, setArbiterAddress] = useState(ARBITER_ADDRESS[0]);
   const [totalAmount, setTotalAmount] = useState('');
+  const [unit, setUnit] = useState<'ether' | 'gwei' | 'wei'>('ether');
   const [jobHash, setJobHash] = useState('');
+  const [totalAmountInWei, setTotalAmountInWei] = useState('');
   const [milestones, setMilestones] = useState<
     { description: string; amount: string }[]
   >([{ description: '', amount: '' }]);
@@ -132,8 +134,14 @@ function RouteComponent() {
         keccak256(encodePacked(['string'], [m.description])),
       );
 
-      const milestoneAmounts = milestones.map((m) => parseUnits(m.amount, 18)); // Assuming 18 decimals for now
-      const totalAmountParsed = parseUnits(totalAmount, 18);
+      // Convert amounts to Wei based on selected unit
+      // ether: 18 decimals, gwei: 9 decimals, wei: 0 decimals
+      const decimals = unit === 'ether' ? 18 : unit === 'gwei' ? 9 : 0;
+
+      const milestoneAmounts = milestones.map((m) =>
+        parseUnits(m.amount, decimals),
+      );
+      const totalAmountParsed = parseUnits(totalAmount, decimals);
 
       const sumMilestones = milestoneAmounts.reduce((a, b) => a + b, 0n);
 
@@ -141,6 +149,9 @@ function RouteComponent() {
         toast.error('Total amount must equal the sum of milestone amounts');
         return;
       }
+
+      // Store the Wei value for later use in the database
+      setTotalAmountInWei(totalAmountParsed.toString());
 
       writeContract({
         address: '0x5FbDB2315678afecb367f032d93F642f64180aa3', // Replace with actual contract address
@@ -190,7 +201,7 @@ function RouteComponent() {
           onChainId,
           clientWallet: address!,
           arbiter: arbiterAddress,
-          totalAmount,
+          totalAmount: totalAmountInWei, // Store as Wei string
           tokenAddress,
         });
       } else {
@@ -265,16 +276,33 @@ function RouteComponent() {
             </div>
 
             <div className='space-y-2'>
-              <Label htmlFor='totalAmount'>Total Amount (in wei)</Label>
-              <Input
-                id='totalAmount'
-                type='number'
-                step='0.000001'
-                placeholder='1000'
-                value={totalAmount}
-                onChange={(e) => setTotalAmount(e.target.value)}
-                required
-              />
+              <Label htmlFor='totalAmount'>Total Amount</Label>
+              <div className='grid grid-cols-2 gap-4'>
+                <Input
+                  id='totalAmount'
+                  type='number'
+                  step='0.000001'
+                  placeholder='1000'
+                  value={totalAmount}
+                  onChange={(e) => setTotalAmount(e.target.value)}
+                  required
+                />
+                <Select
+                  value={unit}
+                  onValueChange={(value) =>
+                    setUnit(value as 'ether' | 'gwei' | 'wei')
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder='Select unit' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='ether'>Ether (ETH)</SelectItem>
+                    <SelectItem value='gwei'>Gwei</SelectItem>
+                    <SelectItem value='wei'>Wei</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className='space-y-4'>
@@ -313,7 +341,15 @@ function RouteComponent() {
                       />
                     </div>
                     <div className='space-y-2'>
-                      <Label className='text-xs'>Amount</Label>
+                      <Label className='text-xs'>
+                        Amount (
+                        {unit === 'ether'
+                          ? 'ETH'
+                          : unit === 'gwei'
+                            ? 'Gwei'
+                            : 'Wei'}
+                        )
+                      </Label>
                       <Input
                         type='number'
                         step='0.000001'

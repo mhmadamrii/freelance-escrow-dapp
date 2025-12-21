@@ -60,8 +60,7 @@ function RouteComponent() {
     }),
   );
 
-  const handleSubmitMilestone = (id: string, onChainIndex: number) => {
-    setSelectedMilestone(id);
+  const handleSubmitMilestone = (onChainIndex: number) => {
     try {
       writeContract({
         address: FREELANCE_ESCROW_ADDRESS as `0x${string}`,
@@ -78,13 +77,22 @@ function RouteComponent() {
     }
   };
 
-  const handleApproveMilestone = (milestoneId: number) => {
+  const handleApproveMilestone = (
+    mileStoneId: string,
+    onChainIndex: number,
+  ) => {
+    setSelectedMilestone(id);
+    console.log('id', id);
+    mutate({
+      milestoneId: mileStoneId,
+      status: 'COMPLETED',
+    });
     try {
       writeContract({
         address: FREELANCE_ESCROW_ADDRESS as `0x${string}`,
         abi,
         functionName: 'approveMilestone',
-        args: [BigInt(data?.onChainId ?? 0), BigInt(milestoneId)],
+        args: [BigInt(data?.onChainId ?? 0), BigInt(onChainIndex)],
       });
     } catch (error) {}
   };
@@ -93,7 +101,7 @@ function RouteComponent() {
     if (isSuccess) {
       mutate({
         milestoneId: selectedMilestone,
-        status: 'SUBMITTED',
+        status: 'COMPLETED',
       });
     }
   }, [isSuccess]);
@@ -112,7 +120,11 @@ function RouteComponent() {
             <h1>{item.amount}</h1>
             <h1>{item.descriptionHash}</h1>
             {data.clientWallet === address && item.status == 'SUBMITTED' && (
-              <Button onClick={() => handleApproveMilestone(item.onChainIndex)}>
+              <Button
+                onClick={() =>
+                  handleApproveMilestone(item.id, item.onChainIndex)
+                }
+              >
                 Approve Milestone
               </Button>
             )}
@@ -123,13 +135,12 @@ function RouteComponent() {
             >
               <Button
                 disabled={item.status !== 'IN_PROGRESS'}
-                onClick={() =>
-                  handleSubmitMilestone(item.id, item.onChainIndex)
-                }
+                onClick={() => handleSubmitMilestone(item.onChainIndex)}
               >
                 Submit Milestone
               </Button>
               <Button
+                disabled={item.status !== 'PENDING'}
                 onClick={() =>
                   mutate({
                     milestoneId: item.id,

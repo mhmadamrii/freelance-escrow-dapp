@@ -213,6 +213,8 @@ contract FreelanceEscrow {
     console.log("Approving Job ID:", _jobId);
     console.log("Current Released Amount:", job.releasedAmount);
     console.log("Milestone Amount:", job.milestones[_milestoneIndex].amount);
+    console.log("Job status funded?:", job.status == JobStatus.Funded);
+    console.log("Job status in progress?:", job.status == JobStatus.InProgress);
 
     Milestone storage m = job.milestones[_milestoneIndex];
     require(m.submitted, 'Not submitted');

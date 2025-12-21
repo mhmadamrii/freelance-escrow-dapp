@@ -1,26 +1,19 @@
-import abi from '@/lib/abi.json';
 import { JobMilestones } from '../-components/job-milestones';
 import { shortenAddress } from '@/lib/utils';
 import { StatusBadge } from '../-components/status-badge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useEffect } from 'react';
-import { toast } from 'sonner';
-import { FREELANCE_ESCROW_ADDRESS } from '@/lib/constants';
-import { formatEther, parseEther } from 'viem';
+import { formatEther } from 'viem';
 import { AssignFreelancer } from '../-components/assign-freelancer';
+import { JobActions } from '../-components/job-actions';
 import { Separator } from '@/components/ui/separator';
 import { useTRPC } from '@/utils/trpc';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
+import { useQuery } from '@tanstack/react-query';
+import { createFileRoute, Link } from '@tanstack/react-router';
 import { format, formatDistanceToNow } from 'date-fns';
 import { motion } from 'motion/react';
 
-import {
-  useAccount,
-  useWaitForTransactionReceipt,
-  useWriteContract,
-} from 'wagmi';
+import { useAccount } from 'wagmi';
 
 import {
   Card,
@@ -38,7 +31,6 @@ import {
   Coins,
   FileText,
   Globe,
-  Loader2,
   ShieldCheck,
   User,
   Wallet,
@@ -49,13 +41,10 @@ export const Route = createFileRoute('/(main)/jobs/$id/')({
 });
 
 function RouteComponent() {
-  const navigate = useNavigate();
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
 
   const { id } = Route.useParams();
   const { address } = useAccount();
-  const { data: hash, writeContract, isPending } = useWriteContract();
 
   const { data: job } = useQuery(
     trpc.job?.jobById.queryOptions({
@@ -63,80 +52,13 @@ function RouteComponent() {
     }),
   );
 
-  console.log('job', job);
-
-  const { mutate } = useMutation(
-    trpc.job.updateJobStatus.mutationOptions({
-      onSuccess: () => {
-        queryClient.invalidateQueries();
-        toast.success('Job funded successfully!');
-      },
-      onError: (err) => {
-        console.log('error', err);
-        toast.error('Error assigning freelancer');
-      },
-    }),
-  );
-
-  const { mutate: updateStatus, isPending: isUpdatingStatus } = useMutation(
-    trpc.job.updateJobStatus.mutationOptions({
-      onSuccess: () => {
-        queryClient.invalidateQueries();
-        toast.success('Job status updated successfully!');
-        navigate({
-          to: '/jobs/$id/milestones',
-          params: { id: job?.id as string },
-        });
-      },
-    }),
-  );
-
-  const {
-    isLoading: isFundingJob,
-    isSuccess: isSuccessFundingJob,
-    isError,
-  } = useWaitForTransactionReceipt({
-    hash,
-  });
-
-  const handleFundJob = () => {
-    try {
-      if (job?.jobApplications.length == 0) {
-        return toast.error('No applications found');
-      }
-
-      writeContract({
-        address: FREELANCE_ESCROW_ADDRESS as `0x${string}`,
-        abi: abi,
-        functionName: 'fundJob',
-        args: [BigInt(job?.onChainId?.toString() ?? '0')],
-        value: parseEther(job?.totalAmount as string),
-      });
-    } catch (error) {
-      console.error('Error funding job:', error);
-      toast.error('Failed to fund job?. Please try again.');
-    }
-  };
-
   const isClient = job?.clientWallet.toLowerCase() === address?.toLowerCase();
-  const isFreelancer = job?.freelancerWallet?.toLowerCase() === address?.toLowerCase(); // prettier-ignore
+  const isFreelancer =
+    job?.freelancerWallet?.toLowerCase() === address?.toLowerCase();
 
   const hasApplied = (job?.jobApplications || []).some(
     (app) => app.freelancerWallet.toLowerCase() === address?.toLowerCase(),
   );
-
-  useEffect(() => {
-    if (isSuccessFundingJob) {
-      mutate({
-        jobId: job?.id as string,
-        status: 'FUNDED',
-      });
-    }
-
-    if (isError) {
-      toast.error('Failed to fund job?. Transaction was rejected or failed.');
-    }
-  }, [isSuccessFundingJob, isError]);
 
   return (
     <div className='container mx-auto max-w-6xl px-4 py-8'>
@@ -157,20 +79,6 @@ function RouteComponent() {
         className='grid gap-8 lg:grid-cols-3'
       >
         <div className='lg:col-span-2 space-y-8'>
-          {job?.status == 'FUNDED' && job?.freelancerWallet == address && (
-            <Button
-              disabled={isUpdatingStatus}
-              onClick={() =>
-                updateStatus({
-                  jobId: job.id,
-                  status: 'IN_PROGRESS',
-                })
-              }
-            >
-              {isPending && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
-              Start working
-            </Button>
-          )}
           <div className='space-y-4'>
             <div className='flex items-center gap-2 text-sm text-muted-foreground'>
               <Briefcase className='h-4 w-4' />
@@ -299,37 +207,12 @@ function RouteComponent() {
               </CardTitle>
             </CardHeader>
             <CardFooter className='flex-col gap-3'>
-              {isClient ? (
-                job?.status === 'CREATED' ||
-                job?.status === 'WAITING_FUNDING' ? (
-                  <Button
-                    disabled={isPending || isFundingJob}
-                    onClick={handleFundJob}
-                    className='w-full size-lg text-lg font-semibold shadow-lg shadow-primary/20'
-                  >
-                    Fund Job
-                  </Button>
-                ) : (
-                  <Button className='w-full' variant='outline' disabled>
-                    Job Funded
-                  </Button>
-                )
-              ) : isFreelancer ? (
-                <Button className='w-full' variant='secondary'>
-                  Submit Work
-                </Button>
-              ) : (
-                !hasApplied && (
-                  <Button className='w-full size-lg text-lg font-semibold shadow-lg shadow-primary/20'>
-                    Apply Now
-                  </Button>
-                )
-              )}
-              {hasApplied && !isFreelancer && (
-                <Button className='w-full' variant='outline' disabled>
-                  Application Sent
-                </Button>
-              )}
+              <JobActions
+                job={job}
+                isClient={isClient}
+                isFreelancer={isFreelancer}
+                hasApplied={hasApplied}
+              />
             </CardFooter>
           </Card>
           <Card>

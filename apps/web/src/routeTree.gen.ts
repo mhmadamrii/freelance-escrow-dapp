@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as mainRouteRouteImport } from './routes/(main)/route'
 import { Route as publicIndexRouteImport } from './routes/(public)/index'
+import { Route as publicTestingRouteImport } from './routes/(public)/testing'
 import { Route as publicAuthRouteImport } from './routes/(public)/auth'
 import { Route as mainProfileIndexRouteImport } from './routes/(main)/profile/index'
 import { Route as mainJobsIndexRouteImport } from './routes/(main)/jobs/index'
@@ -27,6 +28,11 @@ const mainRouteRoute = mainRouteRouteImport.update({
 const publicIndexRoute = publicIndexRouteImport.update({
   id: '/(public)/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const publicTestingRoute = publicTestingRouteImport.update({
+  id: '/(public)/testing',
+  path: '/testing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const publicAuthRoute = publicAuthRouteImport.update({
@@ -73,6 +79,7 @@ const mainJobsIdMilestonesIndexRoute =
 
 export interface FileRoutesByFullPath {
   '/auth': typeof publicAuthRoute
+  '/testing': typeof publicTestingRoute
   '/': typeof publicIndexRoute
   '/dashboard': typeof mainDashboardIndexRoute
   '/freelancers': typeof mainFreelancersIndexRoute
@@ -84,6 +91,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/auth': typeof publicAuthRoute
+  '/testing': typeof publicTestingRoute
   '/': typeof publicIndexRoute
   '/dashboard': typeof mainDashboardIndexRoute
   '/freelancers': typeof mainFreelancersIndexRoute
@@ -97,6 +105,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/(main)': typeof mainRouteRouteWithChildren
   '/(public)/auth': typeof publicAuthRoute
+  '/(public)/testing': typeof publicTestingRoute
   '/(public)/': typeof publicIndexRoute
   '/(main)/dashboard/': typeof mainDashboardIndexRoute
   '/(main)/freelancers/': typeof mainFreelancersIndexRoute
@@ -110,6 +119,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/auth'
+    | '/testing'
     | '/'
     | '/dashboard'
     | '/freelancers'
@@ -121,6 +131,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
+    | '/testing'
     | '/'
     | '/dashboard'
     | '/freelancers'
@@ -133,6 +144,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/(main)'
     | '/(public)/auth'
+    | '/(public)/testing'
     | '/(public)/'
     | '/(main)/dashboard/'
     | '/(main)/freelancers/'
@@ -146,6 +158,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   mainRouteRoute: typeof mainRouteRouteWithChildren
   publicAuthRoute: typeof publicAuthRoute
+  publicTestingRoute: typeof publicTestingRoute
   publicIndexRoute: typeof publicIndexRoute
 }
 
@@ -163,6 +176,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof publicIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(public)/testing': {
+      id: '/(public)/testing'
+      path: '/testing'
+      fullPath: '/testing'
+      preLoaderRoute: typeof publicTestingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/(public)/auth': {
@@ -251,6 +271,7 @@ const mainRouteRouteWithChildren = mainRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   mainRouteRoute: mainRouteRouteWithChildren,
   publicAuthRoute: publicAuthRoute,
+  publicTestingRoute: publicTestingRoute,
   publicIndexRoute: publicIndexRoute,
 }
 export const routeTree = rootRouteImport

@@ -2,9 +2,10 @@ import abi from '@/lib/abi.json';
 
 import { useReadContract, useReadContracts } from 'wagmi';
 import { useMemo } from 'react';
+import { FREELANCE_ESCROW_ADDRESS } from '@/lib/constants';
 
 const CONTRACT_CONFIG = {
-  address: '0xYourContractAddress' as const,
+  address: FREELANCE_ESCROW_ADDRESS as const,
   abi: abi, // Your contract ABI
 };
 
