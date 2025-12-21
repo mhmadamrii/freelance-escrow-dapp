@@ -1,8 +1,17 @@
 import abi from '@/lib/abi.json';
 
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { Calendar, Clock, FileUser, User2, Wallet } from 'lucide-react';
-import { useAccount, useReadContract } from 'wagmi';
+import {
+  Calendar,
+  Clock,
+  FileUser,
+  Trash2,
+  Wallet,
+  ArrowRight,
+  Users,
+  Bitcoin,
+} from 'lucide-react';
+import { useReadContract } from 'wagmi';
 import { formatEther } from 'viem';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useTRPC } from '@/utils/trpc';
@@ -10,9 +19,11 @@ import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
-import { JobApplication } from './-components/job-application';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { JobDetailSheet } from './-components/job-detail-sheet';
+import { StatusBadge } from './-components/status-badge';
+import { Badge } from '@/components/ui/badge';
 
 const CONTRACT_ADDRESS = '0x5FbDB2315678afecb367f032d93F642f64180aa3';
 
@@ -21,20 +32,13 @@ export const Route = createFileRoute('/(main)/jobs/')({
 });
 
 function RouteComponent() {
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const trpc = useTRPC();
 
   const { data: allJobs } = useQuery(trpc.job.allJobs.queryOptions());
-  console.log('allJobs', allJobs);
-
-  const { data: nextJobId } = useReadContract({
-    address: CONTRACT_ADDRESS,
-    abi: abi,
-    functionName: 'nextJobId',
-  });
-
   const { data: user } = useQuery(trpc.user.getCurrentUser.queryOptions());
+
+  console.log('all jobs', allJobs);
 
   const { mutate: deleteJob, isPending: isDeletingJob } = useMutation(
     trpc.job.deleteJob.mutationOptions({
@@ -46,91 +50,133 @@ function RouteComponent() {
   );
 
   return (
-    <div className='min-h-screen py-12 px-6'>
-      <div className='max-w-6xl mx-auto'>
-        <h1 className='text-4xl font-bold mb-8'>Open Jobs</h1>
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+    <div className='min-h-screen bg-linear-to-b from-background to-muted/20 py-16 px-6'>
+      <div className='max-w-7xl mx-auto'>
+        <div className='flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12'>
+          <div>
+            <h1 className='text-4xl font-extrabold tracking-tight lg:text-5xl mb-3'>
+              Available Opportunities
+            </h1>
+            <p className='text-muted-foreground text-lg max-w-2xl'>
+              Discover and apply for the best blockchain projects. Secure
+              payments, transparent milestones, and verified clients.
+            </p>
+          </div>
+          <div className='flex items-center gap-3 bg-card border rounded-2xl p-4 shadow-sm'>
+            <div className='h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary'>
+              <Users className='h-6 w-6' />
+            </div>
+            <div>
+              <p className='text-sm text-muted-foreground font-medium'>
+                Active Jobs
+              </p>
+              <p className='text-2xl font-bold'>{allJobs?.length || 0}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8'>
           {allJobs?.map((job) => (
             <div
               key={job.id}
-              className='bg-card border rounded-xl p-6 hover:shadow-lg transition-shadow flex flex-col gap-4'
+              className='group relative bg-card border rounded-2xl p-6 hover:shadow-2xl hover:border-primary/20 transition-all duration-300 flex flex-col gap-5 overflow-hidden'
             >
-              <div>
-                <h2 className='text-xl font-semibold mb-3'>{job.title}</h2>
-                <p className='text-muted-foreground text-sm mb-6 line-clamp-3'>
+              <div className='absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity'>
+                {job.category == 'DEFI' ? (
+                  <Bitcoin className='h-24 w-24 -rotate-20' />
+                ) : (
+                  <Wallet className='h-24 w-24 -rotate-12' />
+                )}
+              </div>
+
+              <div className='flex justify-between items-start relative z-10'>
+                <StatusBadge status={job.status} />
+                {user?.role === 'CLIENT' && (
+                  <Button
+                    variant='ghost'
+                    size='icon'
+                    className='h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors'
+                    disabled={isDeletingJob}
+                    onClick={() => deleteJob({ jobId: job.id })}
+                  >
+                    <Trash2 className='h-4 w-4' />
+                  </Button>
+                )}
+              </div>
+
+              <div className='relative z-10'>
+                <h2 className='text-xl font-bold mb-2 group-hover:text-primary transition-colors line-clamp-1'>
+                  {job.title}
+                </h2>
+                <p className='text-muted-foreground text-sm line-clamp-2 leading-relaxed'>
                   {job.description}
                 </p>
               </div>
-              <div className='space-y-3'>
-                <div className='flex items-center gap-2 text-sm'>
+
+              <div className='grid grid-cols-2 gap-4 relative z-10'>
+                <div className='flex items-center gap-2 text-sm font-semibold text-primary bg-primary/5 rounded-lg px-3 py-2'>
                   <Wallet className='w-4 h-4' />
-                  <span className='font-medium'>
-                    {formatEther(BigInt(job.totalAmount))} ETH
-                  </span>
+                  <span>{formatEther(BigInt(job.totalAmount))} ETH</span>
                 </div>
-                <div className='flex items-center gap-2 text-sm text-muted-foreground'>
-                  <div className='flex items-center gap-2 text-sm text-muted-foreground'>
-                    <Clock className='w-4 h-4' />
-                    <span>1 Month</span>
-                  </div>
-                  <div className='flex items-center gap-2 text-sm text-muted-foreground'>
-                    <Clock className='w-4 h-4' />
-                    <span>{job.milestones.length} milestones</span>
-                  </div>
-                </div>
-                <div className='flex items-center gap-2 text-sm text-muted-foreground'>
-                  <Calendar className='w-4 h-4' />
-                  <span>
-                    Posted {format(new Date(job.createdAt), 'MMM dd, yyyy')}
-                  </span>
-                </div>
-                <div className='flex items-center gap-2 text-sm text-muted-foreground'>
-                  <FileUser className='w-4 h-4' />
-                  <span>{job.jobApplications.length} Applications</span>
+                <div className='flex items-center gap-2 text-sm font-medium text-muted-foreground bg-muted/50 rounded-lg px-3 py-2'>
+                  <Clock className='w-4 h-4' />
+                  <span>{job.milestones.length} Milestones</span>
                 </div>
               </div>
-              <Separator />
-              <div className='flex gap-4'>
-                <Avatar className='h-20 w-20 border-2 border-primary/10'>
-                  <AvatarImage src={job?.user?.image || ''} />
-                  <AvatarFallback className='text-xl bg-primary/5'>
-                    {job.user?.name?.charAt(0) || 'U'}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <h1>{job.user?.name}</h1>
-                  <h1>{job.user.totalSpent}</h1>
+
+              <Separator className='opacity-50' />
+
+              <div className='flex items-center justify-between relative z-10'>
+                <div className='flex items-center gap-3'>
+                  <Avatar className='h-10 w-10 border-2 border-background shadow-sm'>
+                    <AvatarImage src={job?.user?.image || ''} />
+                    <AvatarFallback className='bg-primary/5 text-primary text-xs font-bold'>
+                      {job.user?.name?.charAt(0) || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className='flex flex-col'>
+                    <span className='text-sm font-bold truncate max-w-[100px]'>
+                      {job.user?.name || 'Client'}
+                    </span>
+                    <span className='text-[10px] text-muted-foreground uppercase tracking-wider font-medium'>
+                      Posted {format(new Date(job.createdAt), 'MMM dd')}
+                    </span>
+                  </div>
+                </div>
+                <div className='flex items-center gap-1.5 text-xs font-medium text-muted-foreground'>
+                  <FileUser className='w-3.5 h-3.5' />
+                  <span>{job.jobApplications.length} apps</span>
                 </div>
               </div>
-              <Button
-                className='cursor-pointer w-full'
-                onClick={() =>
-                  navigate({ to: '/jobs/$id', params: { id: job.id } })
+
+              <JobDetailSheet
+                jobId={job.id}
+                userRole={user?.role}
+                trigger={
+                  <Button className='w-full mt-2 group/btn relative overflow-hidden bg-primary hover:bg-primary/90 transition-all duration-300'>
+                    <span className='relative z-10 flex items-center justify-center gap-2'>
+                      View Details
+                      <ArrowRight className='w-4 h-4 group-hover/btn:translate-x-1 transition-transform' />
+                    </span>
+                  </Button>
                 }
-              >
-                View Details
-              </Button>
-              {user?.role === 'FREELANCER' && (
-                <JobApplication
-                  clientWallet={job.clientWallet}
-                  jobDesc={job.description}
-                  jobId={job.id}
-                />
-              )}
-              <Button
-                variant='destructive'
-                disabled={isDeletingJob}
-                onClick={() =>
-                  deleteJob({
-                    jobId: job.id,
-                  })
-                }
-              >
-                {isDeletingJob ? 'Deleting...' : 'Delete'}
-              </Button>
+              />
             </div>
           ))}
         </div>
+
+        {allJobs?.length === 0 && (
+          <div className='flex flex-col items-center justify-center py-24 text-center'>
+            <div className='h-20 w-20 rounded-full bg-muted flex items-center justify-center mb-6'>
+              <Clock className='h-10 w-10 text-muted-foreground' />
+            </div>
+            <h3 className='text-2xl font-bold mb-2'>No jobs found</h3>
+            <p className='text-muted-foreground max-w-sm'>
+              There are currently no open jobs. Check back later or post a new
+              job if you are a client.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

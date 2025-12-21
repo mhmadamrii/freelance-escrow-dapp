@@ -117,6 +117,7 @@ export const jobRouter = router({
           milestones: true,
           reviews: true,
           jobApplications: true,
+          user: true,
         },
       });
     }),
