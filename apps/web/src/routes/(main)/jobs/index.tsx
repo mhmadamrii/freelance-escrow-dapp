@@ -1,8 +1,8 @@
 import abi from '@/lib/abi.json';
 
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { Calendar, Clock, Wallet } from 'lucide-react';
-import { useReadContract } from 'wagmi';
+import { Calendar, Clock, FileUser, User2, Wallet } from 'lucide-react';
+import { useAccount, useReadContract } from 'wagmi';
 import { formatEther } from 'viem';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useTRPC } from '@/utils/trpc';
@@ -24,11 +24,14 @@ function RouteComponent() {
   const trpc = useTRPC();
 
   const { data: allJobs } = useQuery(trpc.job.allJobs.queryOptions());
+
   const { data: nextJobId } = useReadContract({
     address: CONTRACT_ADDRESS,
     abi: abi,
     functionName: 'nextJobId',
   });
+
+  const { data: user } = useQuery(trpc.user.getCurrentUser.queryOptions());
 
   const { mutate: deleteJob, isPending: isDeletingJob } = useMutation(
     trpc.job.deleteJob.mutationOptions({
@@ -78,6 +81,10 @@ function RouteComponent() {
                     Posted {format(new Date(job.createdAt), 'MMM dd, yyyy')}
                   </span>
                 </div>
+                <div className='flex items-center gap-2 text-sm text-muted-foreground'>
+                  <FileUser className='w-4 h-4' />
+                  <span>{job.jobApplications.length} Applications</span>
+                </div>
               </div>
               <Button
                 className='cursor-pointer w-full'
@@ -87,11 +94,13 @@ function RouteComponent() {
               >
                 View Details
               </Button>
-              <JobApplication
-                clientWallet={job.clientWallet}
-                jobDesc={job.description}
-                jobId={job.id}
-              />
+              {user?.role === 'FREELANCER' && (
+                <JobApplication
+                  clientWallet={job.clientWallet}
+                  jobDesc={job.description}
+                  jobId={job.id}
+                />
+              )}
               <Button
                 variant='destructive'
                 disabled={isDeletingJob}

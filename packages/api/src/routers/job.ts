@@ -11,6 +11,7 @@ export const jobRouter = router({
     return prisma.job.findMany({
       include: {
         milestones: true,
+        jobApplications: true,
       },
     });
   }),
