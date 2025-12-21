@@ -1,28 +1,9 @@
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { useTRPC } from '@/utils/trpc';
 import type { JobByIdOutput } from '@onwork/api/routers/job';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
 import { formatEther } from 'viem';
-import { useAccount } from 'wagmi';
 
 export function JobMilestones({ job }: { job: JobByIdOutput | undefined }) {
-  const trpc = useTRPC();
-  const queryClient = useQueryClient();
-  const { address } = useAccount();
-
-  const { mutate: updateStatus, isPending } = useMutation(
-    trpc.job.updateJobStatus.mutationOptions({
-      onSuccess: () => {
-        queryClient.invalidateQueries();
-        toast.success('Job status updated successfully!');
-      },
-    }),
-  );
-
   return (job?.milestones || []).map((milestone, index) => (
     <Card
       key={milestone.id}
@@ -43,20 +24,6 @@ export function JobMilestones({ job }: { job: JobByIdOutput | undefined }) {
           <Badge variant={milestone.submissionHash ? 'default' : 'secondary'}>
             {milestone.submissionHash && 'Submitted'}
           </Badge>
-          {job?.status == 'FUNDED' && job?.freelancerWallet == address && (
-            <Button
-              disabled={isPending}
-              onClick={() =>
-                updateStatus({
-                  jobId: job.id,
-                  status: 'IN_PROGRESS',
-                })
-              }
-            >
-              {isPending && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
-              Start working
-            </Button>
-          )}
         </div>
       </CardContent>
     </Card>

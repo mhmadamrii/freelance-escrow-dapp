@@ -12,7 +12,7 @@ import { AssignFreelancer } from '../-components/assign-freelancer';
 import { Separator } from '@/components/ui/separator';
 import { useTRPC } from '@/utils/trpc';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createFileRoute, Link } from '@tanstack/react-router';
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { format, formatDistanceToNow } from 'date-fns';
 import { motion } from 'motion/react';
 
@@ -38,6 +38,7 @@ import {
   Coins,
   FileText,
   Globe,
+  Loader2,
   ShieldCheck,
   User,
   Wallet,
@@ -48,6 +49,7 @@ export const Route = createFileRoute('/(main)/jobs/$id/')({
 });
 
 function RouteComponent() {
+  const navigate = useNavigate();
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
@@ -72,6 +74,19 @@ function RouteComponent() {
       onError: (err) => {
         console.log('error', err);
         toast.error('Error assigning freelancer');
+      },
+    }),
+  );
+
+  const { mutate: updateStatus, isPending: isUpdatingStatus } = useMutation(
+    trpc.job.updateJobStatus.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries();
+        toast.success('Job status updated successfully!');
+        navigate({
+          to: '/jobs/$id/milestones',
+          params: { id: job?.id as string },
+        });
       },
     }),
   );
@@ -142,6 +157,20 @@ function RouteComponent() {
         className='grid gap-8 lg:grid-cols-3'
       >
         <div className='lg:col-span-2 space-y-8'>
+          {job?.status == 'FUNDED' && job?.freelancerWallet == address && (
+            <Button
+              disabled={isUpdatingStatus}
+              onClick={() =>
+                updateStatus({
+                  jobId: job.id,
+                  status: 'IN_PROGRESS',
+                })
+              }
+            >
+              {isPending && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
+              Start working
+            </Button>
+          )}
           <div className='space-y-4'>
             <div className='flex items-center gap-2 text-sm text-muted-foreground'>
               <Briefcase className='h-4 w-4' />

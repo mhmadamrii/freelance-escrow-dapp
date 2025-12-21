@@ -3,6 +3,7 @@ pragma solidity ^0.8.20;
 
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
+import "hardhat/console.sol";
 
 /**
  * @title FreelanceEscrow
@@ -208,6 +209,10 @@ contract FreelanceEscrow {
       'Invalid status'
     );
     require(_milestoneIndex < job.milestones.length, 'Invalid milestone index');
+
+    console.log("Approving Job ID:", _jobId);
+    console.log("Current Released Amount:", job.releasedAmount);
+    console.log("Milestone Amount:", job.milestones[_milestoneIndex].amount);
 
     Milestone storage m = job.milestones[_milestoneIndex];
     require(m.submitted, 'Not submitted');

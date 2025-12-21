@@ -51,8 +51,6 @@ function RouteComponent() {
     }),
   );
 
-  console.log('data', data);
-
   const { mutate } = useMutation(
     trpc.job.updateMilestones.mutationOptions({
       onSuccess: () => {
