@@ -3,7 +3,7 @@ import abi from '@/lib/abi.json';
 import { parseUnits, keccak256, encodePacked, decodeEventLog } from 'viem';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ARBITER_ADDRESS } from '@/lib/constants';
+import { ARBITER_ADDRESS, JOB_CATEGORIES } from '@/lib/constants';
 import { toast } from 'sonner';
 import { Loader2, Plus, Trash2 } from 'lucide-react';
 import { useTRPC } from '@/utils/trpc';
@@ -33,6 +33,7 @@ import {
   CardTitle,
   CardDescription,
 } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
 
 export const Route = createFileRoute('/(main)/jobs/create/')({
   component: RouteComponent,
@@ -51,6 +52,8 @@ function RouteComponent() {
   const [totalAmount, setTotalAmount] = useState('');
   const [unit, setUnit] = useState<'ether' | 'gwei' | 'wei'>('ether');
   const [jobHash, setJobHash] = useState('');
+  const [category, setCategory] =
+    useState<(typeof JOB_CATEGORIES)[number]['value']>('ANY');
   const [totalAmountInWei, setTotalAmountInWei] = useState('');
   const [milestones, setMilestones] = useState<
     { description: string; amount: string }[]
@@ -134,8 +137,6 @@ function RouteComponent() {
         keccak256(encodePacked(['string'], [m.description])),
       );
 
-      // Convert amounts to Wei based on selected unit
-      // ether: 18 decimals, gwei: 9 decimals, wei: 0 decimals
       const decimals = unit === 'ether' ? 18 : unit === 'gwei' ? 9 : 0;
 
       const milestoneAmounts = milestones.map((m) =>
@@ -150,7 +151,6 @@ function RouteComponent() {
         return;
       }
 
-      // Store the Wei value for later use in the database
       setTotalAmountInWei(totalAmountParsed.toString());
 
       writeContract({
@@ -203,6 +203,7 @@ function RouteComponent() {
           arbiter: arbiterAddress,
           totalAmount: totalAmountInWei, // Store as Wei string
           tokenAddress,
+          category: category as (typeof JOB_CATEGORIES)[number]['value'],
         });
       } else {
         toast.error('Failed to retrieve Job ID from transaction receipt');
@@ -228,17 +229,6 @@ function RouteComponent() {
                 placeholder='e.g. Smart Contract Audit'
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='description'>Description</Label>
-              <Input
-                id='description'
-                placeholder='Detailed description of the job...'
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
                 required
               />
             </div>
@@ -293,7 +283,7 @@ function RouteComponent() {
                     setUnit(value as 'ether' | 'gwei' | 'wei')
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className='w-full'>
                     <SelectValue placeholder='Select unit' />
                   </SelectTrigger>
                   <SelectContent>
@@ -302,7 +292,35 @@ function RouteComponent() {
                     <SelectItem value='wei'>Wei</SelectItem>
                   </SelectContent>
                 </Select>
+                <Select
+                  value={category}
+                  onValueChange={(value) =>
+                    setCategory(
+                      value as (typeof JOB_CATEGORIES)[number]['value'],
+                    )
+                  }
+                >
+                  <SelectTrigger className='w-full'>
+                    <SelectValue placeholder='Select unit' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {JOB_CATEGORIES.map((cat) => (
+                      <SelectItem value={cat.value}>{cat.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
+            </div>
+
+            <div className='space-y-2'>
+              <Label htmlFor='description'>Description</Label>
+              <Textarea
+                id='description'
+                placeholder='Detailed description of the job...'
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                required
+              />
             </div>
 
             <div className='space-y-4'>

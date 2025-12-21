@@ -33,6 +33,16 @@ enum MilestoneStatus {
   COMPLETED
 }
 
+enum Category {
+  ANY
+  WEB2_DEVELOPMENT
+  WEB3_DEVELOPMENT
+  SECURITY
+  DEFI
+  NFT
+  OTHER
+}
+
 model Job {
   id String @id @default(uuid())
 
@@ -43,8 +53,11 @@ model Job {
   // On-chain identifiers
   // onChainId BigInt?   @unique
   onChainId Int?      @unique
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   jobHash   String // bytes32
   status    JobStatus @default(CREATED)
+  category  Category  @default(ANY)
 
   // Parties (wallets, NOT users for MVP)
   clientWallet     String

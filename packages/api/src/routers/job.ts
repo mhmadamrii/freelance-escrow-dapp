@@ -12,6 +12,7 @@ export const jobRouter = router({
       include: {
         milestones: true,
         jobApplications: true,
+        user: true,
       },
     });
   }),
@@ -143,12 +144,21 @@ export const jobRouter = router({
         arbiter: z.string(),
         tokenAddress: z.string().optional(),
         totalAmount: z.string(),
+        category: z.enum([
+          'ANY',
+          'WEB2_DEVELOPMENT',
+          'WEB3_DEVELOPMENT',
+          'SECURITY',
+          'DEFI',
+          'NFT',
+          'OTHER',
+        ]),
       }),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ ctx, input }) => {
       return prisma.job.create({
         data: {
-          // onChainId: BigInt(input.onChainId),
+          userId: ctx.session.user.id,
           onChainId: Number(input.onChainId),
           jobHash: input.jobHash,
           status: 'CREATED',
@@ -158,6 +168,7 @@ export const jobRouter = router({
           totalAmount: input.totalAmount,
           title: input.title,
           description: input.description,
+          category: input.category,
         },
       });
     }),

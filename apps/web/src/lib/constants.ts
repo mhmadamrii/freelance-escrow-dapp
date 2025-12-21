@@ -61,6 +61,44 @@ export const DUMMY_JOBS = [
   },
 ];
 
+export const JOB_CATEGORIES = [
+  {
+    id: 1,
+    name: 'Anything',
+    value: 'ANY',
+  },
+  {
+    id: 2,
+    name: 'Web2 Development',
+    value: 'WEB2_DEVELOPMENT',
+  },
+  {
+    id: 3,
+    name: 'Web3 Development',
+    value: 'WEB3_DEVELOPMENT',
+  },
+  {
+    id: 4,
+    name: 'Security',
+    value: 'SECURITY',
+  },
+  {
+    id: 5,
+    name: 'DeFi',
+    value: 'DEFI',
+  },
+  {
+    id: 6,
+    name: 'NFT',
+    value: 'NFT',
+  },
+  {
+    id: 7,
+    name: 'Other',
+    value: 'OTHER',
+  },
+] as const;
+
 // const receipt =
 export const FREELANCE_ESCROW_ADDRESS =
   '0x5FbDB2315678afecb367f032d93F642f64180aa3';

@@ -11,6 +11,8 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { JobApplication } from './-components/job-application';
+import { Separator } from '@/components/ui/separator';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const CONTRACT_ADDRESS = '0x5FbDB2315678afecb367f032d93F642f64180aa3';
 
@@ -24,6 +26,7 @@ function RouteComponent() {
   const trpc = useTRPC();
 
   const { data: allJobs } = useQuery(trpc.job.allJobs.queryOptions());
+  console.log('allJobs', allJobs);
 
   const { data: nextJobId } = useReadContract({
     address: CONTRACT_ADDRESS,
@@ -84,6 +87,19 @@ function RouteComponent() {
                 <div className='flex items-center gap-2 text-sm text-muted-foreground'>
                   <FileUser className='w-4 h-4' />
                   <span>{job.jobApplications.length} Applications</span>
+                </div>
+              </div>
+              <Separator />
+              <div className='flex gap-4'>
+                <Avatar className='h-20 w-20 border-2 border-primary/10'>
+                  <AvatarImage src={job?.user?.image || ''} />
+                  <AvatarFallback className='text-xl bg-primary/5'>
+                    {job.user?.name?.charAt(0) || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <h1>{job.user?.name}</h1>
+                  <h1>{job.user.totalSpent}</h1>
                 </div>
               </div>
               <Button
