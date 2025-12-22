@@ -6,4 +6,5 @@ const adapter = new PrismaPg({
 });
 const prisma = new PrismaClient({ adapter });
 
+export * from '../prisma/generated/client';
 export default prisma;

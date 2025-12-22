@@ -1,4 +1,5 @@
-import prisma from '@onwork/db';
+import prisma, { UserRole } from '@onwork/db';
+import { z } from 'zod';
 import { protectedProcedure, router } from '..';
 
 export const userRouter = router({
@@ -9,14 +10,29 @@ export const userRouter = router({
       },
     });
   }),
-  applyAsFreelancer: protectedProcedure.mutation(({ ctx }) => {
-    return prisma.user.update({
-      where: {
-        id: ctx.session.user.id,
-      },
-      data: {
-        role: 'FREELANCER',
-      },
-    });
-  }),
+  applyAsFreelancer: protectedProcedure
+    .input(z.object({ walletAddress: z.string().optional() }))
+    .mutation(({ ctx, input }) => {
+      return prisma.user.update({
+        where: {
+          id: ctx.session.user.id,
+        },
+        data: {
+          role: 'FREELANCER',
+          walletAddress: input.walletAddress,
+        },
+      });
+    }),
+  linkWallet: protectedProcedure
+    .input(z.object({ walletAddress: z.string() }))
+    .mutation(({ ctx, input }) => {
+      return prisma.user.update({
+        where: {
+          id: ctx.session.user.id,
+        },
+        data: {
+          walletAddress: input.walletAddress,
+        },
+      });
+    }),
 });

@@ -1,7 +1,24 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { ChartContainer, type ChartConfig } from '@/components/ui/chart';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useTRPC } from '@/utils/trpc';
+import { useQuery } from '@tanstack/react-query';
+import { formatEther } from 'viem';
+
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from '@/components/ui/chart';
+
+import {
+  format,
+  startOfMonth,
+  eachMonthOfInterval,
+  subMonths,
+  isSameMonth,
+} from 'date-fns';
 
 import {
   Card,
@@ -30,107 +47,171 @@ import {
   Clock,
   Wallet,
   AlertCircle,
+  Loader2,
 } from 'lucide-react';
 
 export const Route = createFileRoute('/(main)/dashboard/')({
   component: RouteComponent,
 });
 
-const clientData = {
-  metrics: [
-    {
-      label: 'Active Jobs',
-      value: '12',
-      icon: Briefcase,
-      color: 'text-blue-600',
-    },
-    {
-      label: 'Total Funded',
-      value: '45.5 ETH',
-      icon: Wallet,
-      color: 'text-green-600',
-    },
-    {
-      label: 'Pending Milestones',
-      value: '8',
-      icon: Clock,
-      color: 'text-orange-600',
-    },
-    {
-      label: 'In Dispute',
-      value: '1',
-      icon: AlertCircle,
-      color: 'text-red-600',
-    },
-  ],
-  statusData: [
-    { name: 'Funded', value: 4 },
-    { name: 'In Progress', value: 6 },
-    { name: 'Completed', value: 2 },
-  ],
-  spending: [
-    { month: 'Jan', amount: 4000 },
-    { month: 'Feb', amount: 3000 },
-    { month: 'Mar', amount: 5500 },
-  ],
-};
-
-const freelancerData = {
-  metrics: [
-    {
-      label: 'Active Contracts',
-      value: '5',
-      icon: Briefcase,
-      color: 'text-purple-600',
-    },
-    {
-      label: 'Total Earned',
-      value: '28.2 ETH',
-      icon: Wallet,
-      color: 'text-green-600',
-    },
-    {
-      label: 'Submissions',
-      value: '14',
-      icon: CheckCircle2,
-      color: 'text-blue-600',
-    },
-    {
-      label: 'Pending Payment',
-      value: '3.4 ETH',
-      icon: Clock,
-      color: 'text-orange-600',
-    },
-  ],
-  statusData: [
-    { name: 'Completed', value: 10 },
-    { name: 'In Progress', value: 5 },
-    { name: 'Disputed', value: 0 },
-  ],
-  spending: [
-    { month: 'Jan', amount: 2100 },
-    { month: 'Feb', amount: 4800 },
-    { month: 'Mar', amount: 3900 },
-  ],
-};
-
 const COLORS = ['#2563eb', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'];
 
 const chartConfig = {
-  desktop: {
-    label: 'Desktop',
-    color: 'var(--chart-1)',
+  amount: {
+    label: 'Amount (ETH)',
+    color: 'hsl(var(--primary))',
+  },
+  jobs: {
+    label: 'Jobs',
+    color: 'hsl(var(--secondary))',
   },
 } satisfies ChartConfig;
 
 export function RouteComponent() {
+  const trpc = useTRPC();
   const [role, setRole] = useState<'client' | 'freelancer'>('client');
-  const data = role === 'client' ? clientData : freelancerData;
+
+  const { data: currentUser } = useQuery(
+    trpc.user.getCurrentUser.queryOptions(),
+  );
+
+  const { data: myJobs, isLoading } = useQuery(
+    trpc.job.getMyJobs.queryOptions(),
+  );
+
+  const stats = useMemo(() => {
+    if (!myJobs || !currentUser) return null;
+
+    const isClientView = role === 'client';
+
+    // Filter jobs based on role and user's relationship to the job
+    const relevantJobs = myJobs.filter((job) => {
+      if (isClientView) {
+        return job.userId === currentUser.id;
+      } else {
+        return job.freelancerWallet === currentUser.walletAddress;
+      }
+    });
+
+    // Metrics
+    const activeJobs = relevantJobs.filter(
+      (j) => !['COMPLETED', 'CANCELLED'].includes(j.status),
+    );
+    const completedJobs = relevantJobs.filter((j) => j.status === 'COMPLETED');
+    const disputedJobs = relevantJobs.filter((j) => j.status === 'DISPUTED');
+
+    const totalVolume = relevantJobs.reduce(
+      (acc, j) => acc + BigInt(j.totalAmount.toString()),
+      0n,
+    );
+
+    const pendingMilestones = relevantJobs
+      .flatMap((j) => j.milestones)
+      .filter((m) =>
+        ['PENDING', 'IN_PROGRESS', 'SUBMITTED'].includes(m.status),
+      );
+
+    // Chart 1: Spending/Revenue Over Time (Last 6 months)
+    const end = new Date();
+    const start = subMonths(startOfMonth(end), 5);
+    const months = eachMonthOfInterval({ start, end });
+
+    const chartData = months.map((month) => {
+      const amount = relevantJobs
+        .filter((j) => isSameMonth(new Date(j.createdAt), month))
+        .reduce((acc, j) => acc + BigInt(j.totalAmount.toString()), 0n);
+
+      return {
+        month: format(month, 'MMM'),
+        amount: Number(formatEther(amount)),
+      };
+    });
+
+    // Chart 2: Status Distribution
+    const statusCounts = relevantJobs.reduce(
+      (acc, j) => {
+        acc[j.status] = (acc[j.status] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
+
+    const statusData = Object.entries(statusCounts).map(([name, value]) => ({
+      name: name.replace('_', ' '),
+      value,
+    }));
+
+    const metrics = isClientView
+      ? [
+          {
+            label: 'Active Jobs',
+            value: activeJobs.length.toString(),
+            icon: Briefcase,
+            color: 'text-blue-600',
+          },
+          {
+            label: 'Total Budgeted',
+            value: `${formatEther(totalVolume)} ETH`,
+            icon: Wallet,
+            color: 'text-green-600',
+          },
+          {
+            label: 'Pending Milestones',
+            value: pendingMilestones.length.toString(),
+            icon: Clock,
+            color: 'text-orange-600',
+          },
+          {
+            label: 'In Dispute',
+            value: disputedJobs.length.toString(),
+            icon: AlertCircle,
+            color: 'text-red-600',
+          },
+        ]
+      : [
+          {
+            label: 'Active Contracts',
+            value: activeJobs.length.toString(),
+            icon: Briefcase,
+            color: 'text-purple-600',
+          },
+          {
+            label: 'Total Earned',
+            value: `${formatEther(BigInt(currentUser.totalEarned.toString()))} ETH`,
+            icon: Wallet,
+            color: 'text-green-600',
+          },
+          {
+            label: 'Completed Jobs',
+            value: completedJobs.length.toString(),
+            icon: CheckCircle2,
+            color: 'text-blue-600',
+          },
+          {
+            label: 'Pending Payment',
+            value: `${formatEther(pendingMilestones.reduce((acc, m) => acc + BigInt(m.amount.toString()), 0n))} ETH`,
+            icon: Clock,
+            color: 'text-orange-600',
+          },
+        ];
+
+    return { metrics, statusData, chartData };
+  }, [myJobs, currentUser, role]);
+
+  if (isLoading) {
+    return (
+      <div className='h-[calc(100vh-80px)] flex items-center justify-center'>
+        <Loader2 className='h-8 w-8 animate-spin text-primary' />
+      </div>
+    );
+  }
+
+  if (!stats) return null;
 
   return (
-    <div className='h-[calc(100vh-80px)] overflow-hidden'>
-      <div className='max-w-7xl mx-auto py-8 space-y-8'>
-        <div className='flex justify-between items-center'>
+    <div className='h-[calc(100vh-80px)] overflow-y-auto'>
+      <div className='max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8'>
+        <div className='flex flex-col md:flex-row justify-between items-start md:items-center gap-4'>
           <div>
             <h1 className='text-3xl font-bold tracking-tight'>
               Escrow Overview
@@ -143,7 +224,7 @@ export function RouteComponent() {
           <Tabs
             value={role}
             onValueChange={(v) => setRole(v as any)}
-            className='w-[400px]'
+            className='w-full md:w-[400px]'
           >
             <TabsList className='grid w-full grid-cols-2'>
               <TabsTrigger value='client'>Client View</TabsTrigger>
@@ -153,8 +234,8 @@ export function RouteComponent() {
         </div>
 
         <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
-          {data.metrics.map((m, i) => (
-            <Card key={i}>
+          {stats.metrics.map((m, i) => (
+            <Card key={i} className='hover:shadow-md transition-shadow'>
               <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
                 <CardTitle className='text-sm font-medium'>{m.label}</CardTitle>
                 <m.icon className={`h-4 w-4 ${m.color}`} />
@@ -166,77 +247,101 @@ export function RouteComponent() {
           ))}
         </div>
 
-        <ChartContainer className='h-112 w-full' config={chartConfig}>
-          <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-7'>
-            <Card className='col-span-4'>
-              <CardHeader>
-                <CardTitle>
-                  {role === 'client' ? 'Total Spend' : 'Revenue'} Over Time
-                </CardTitle>
-                <CardDescription>
-                  Monthly volume from the FreelanceEscrow contract.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className='h-75'>
+        <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-7'>
+          <Card className='col-span-full lg:col-span-4'>
+            <CardHeader>
+              <CardTitle>
+                {role === 'client' ? 'Total Spend' : 'Revenue'} Over Time
+              </CardTitle>
+              <CardDescription>
+                Monthly volume from the FreelanceEscrow contract (ETH).
+              </CardDescription>
+            </CardHeader>
+            <CardContent className='h-[350px]'>
+              <ChartContainer config={chartConfig} className='h-full w-full'>
                 <ResponsiveContainer width='100%' height='100%'>
-                  <BarChart data={data.spending}>
-                    <CartesianGrid strokeDasharray='3 3' vertical={false} />
-                    <XAxis dataKey='month' />
-                    <YAxis />
-                    <Tooltip />
+                  <BarChart data={stats.chartData}>
+                    <CartesianGrid
+                      strokeDasharray='3 3'
+                      vertical={false}
+                      opacity={0.3}
+                    />
+                    <XAxis
+                      dataKey='month'
+                      fontSize={12}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <YAxis
+                      fontSize={12}
+                      tickLine={false}
+                      axisLine={false}
+                      tickFormatter={(value) => `${value} ETH`}
+                    />
+                    <ChartTooltip content={<ChartTooltipContent />} />
                     <Bar
                       dataKey='amount'
                       fill={role === 'client' ? '#2563eb' : '#8b5cf6'}
                       radius={[4, 4, 0, 0]}
+                      barSize={40}
                     />
                   </BarChart>
                 </ResponsiveContainer>
-              </CardContent>
-            </Card>
+              </ChartContainer>
+            </CardContent>
+          </Card>
 
-            <Card className='col-span-3'>
-              <CardHeader>
-                <CardTitle>Job Status Distribution</CardTitle>
-                <CardDescription>
-                  Breakdown of current on-chain statuses.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className='h-[300px]'>
+          <Card className='col-span-full lg:col-span-3'>
+            <CardHeader>
+              <CardTitle>Job Status Distribution</CardTitle>
+              <CardDescription>
+                Breakdown of current on-chain statuses.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className='h-[300px] flex flex-col justify-center'>
+              <ChartContainer config={chartConfig} className='h-full w-full'>
                 <ResponsiveContainer width='100%' height='100%'>
                   <PieChart>
                     <Pie
-                      data={data.statusData}
+                      data={stats.statusData}
                       cx='50%'
                       cy='50%'
                       innerRadius={60}
+                      outerRadius={80}
                       paddingAngle={5}
                       dataKey='value'
                     >
-                      {data.statusData.map((entry, index) => (
+                      {stats.statusData.map((entry, index) => (
                         <Cell
                           key={`cell-${index}`}
                           fill={COLORS[index % COLORS.length]}
                         />
                       ))}
                     </Pie>
-                    <Tooltip />
+                    <ChartTooltip content={<ChartTooltipContent />} />
                   </PieChart>
                 </ResponsiveContainer>
-                <div className='flex justify-center gap-4 text-xs font-medium'>
-                  {data.statusData.map((d, i) => (
-                    <div key={i} className='flex items-center gap-1'>
-                      <div
-                        className='w-3 h-3 rounded-full'
-                        style={{ backgroundColor: COLORS[i] }}
-                      />
-                      {d.name}
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </ChartContainer>
+              </ChartContainer>
+              <div className='grid grid-cols-2 gap-2 mt-4'>
+                {stats.statusData.map((d, i) => (
+                  <div
+                    key={i}
+                    className='flex items-center gap-2 text-xs font-medium'
+                  >
+                    <div
+                      className='w-3 h-3 rounded-full shrink-0'
+                      style={{ backgroundColor: COLORS[i % COLORS.length] }}
+                    />
+                    <span className='truncate'>{d.name}</span>
+                    <span className='ml-auto text-muted-foreground'>
+                      {d.value}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

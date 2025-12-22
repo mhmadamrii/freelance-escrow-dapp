@@ -91,14 +91,55 @@ export const jobRouter = router({
         status: z.enum(['IN_PROGRESS', 'COMPLETED', 'SUBMITTED']),
       }),
     )
-    .mutation(({ input }) => {
-      return prisma.milestone.update({
-        where: {
-          id: input.milestoneId,
-        },
-        data: {
-          status: input.status,
-        },
+    .mutation(async ({ input }) => {
+      const milestone = await prisma.milestone.findUnique({
+        where: { id: input.milestoneId },
+        include: { job: true },
+      });
+
+      if (!milestone) {
+        throw new Error('Milestone not found');
+      }
+
+      return await prisma.$transaction(async (tx) => {
+        const updatedMilestone = await tx.milestone.update({
+          where: { id: input.milestoneId },
+          data: {
+            status: input.status,
+          },
+        });
+
+        if (input.status === 'COMPLETED' && milestone.status !== 'COMPLETED') {
+          // Update client totalSpent
+          await tx.user.update({
+            where: { id: milestone.job.userId },
+            data: {
+              totalSpent: {
+                increment: milestone.amount,
+              },
+            },
+          });
+
+          // Update freelancer totalEarned
+          if (milestone.job.freelancerWallet) {
+            const freelancer = await tx.user.findFirst({
+              where: { walletAddress: milestone.job.freelancerWallet },
+            });
+
+            if (freelancer) {
+              await tx.user.update({
+                where: { id: freelancer.id },
+                data: {
+                  totalEarned: {
+                    increment: milestone.amount,
+                  },
+                },
+              });
+            }
+          }
+        }
+
+        return updatedMilestone;
       });
     }),
 
@@ -185,7 +226,33 @@ export const jobRouter = router({
         },
       });
     }),
+  getMyJobs: protectedProcedure.query(async ({ ctx }) => {
+    const user = await prisma.user.findUnique({
+      where: { id: ctx.session.user.id },
+    });
+
+    return prisma.job.findMany({
+      where: {
+        OR: [
+          { userId: ctx.session.user.id },
+          ...(user?.walletAddress
+            ? [{ freelancerWallet: user.walletAddress }]
+            : []),
+        ],
+      },
+      include: {
+        milestones: true,
+        jobApplications: true,
+        user: true,
+        reviews: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }),
 });
 
 type RouterOutputs = inferRouterOutputs<AppRouter>;
 export type JobByIdOutput = RouterOutputs['job']['jobById'];
+export type MyJobsOutput = RouterOutputs['job']['getMyJobs'];

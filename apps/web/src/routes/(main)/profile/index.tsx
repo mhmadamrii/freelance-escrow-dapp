@@ -1,14 +1,17 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { formatEther } from 'viem';
 import { shortenAddress } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { useDisconnect } from 'wagmi';
+import { useAccount, useDisconnect } from 'wagmi';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { authClient } from '@/lib/auth-client';
 import { useTRPC } from '@/utils/trpc';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, Link } from '@tanstack/react-router';
+import { useMemo, useEffect } from 'react';
+import type { MyJobsOutput } from '@onwork/api/routers/job';
 
 import {
   Card,
@@ -34,7 +37,9 @@ export const Route = createFileRoute('/(main)/profile/')({
 function RouteComponent() {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+
   const { disconnect } = useDisconnect();
+  const { address } = useAccount();
 
   const { data: session } = authClient.useSession();
   const { data: currentUser } = useQuery(
@@ -42,6 +47,20 @@ function RouteComponent() {
   );
 
   console.log('current user', currentUser);
+
+  const { mutate: linkWallet } = useMutation(
+    trpc.user.linkWallet.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries();
+      },
+    }),
+  );
+
+  useEffect(() => {
+    if (currentUser && address && !currentUser.walletAddress) {
+      linkWallet({ walletAddress: address });
+    }
+  }, [currentUser, address, linkWallet]);
 
   const { mutate: applyAsFreelancer, isPending: isApplying } = useMutation(
     trpc.user.applyAsFreelancer.mutationOptions({
@@ -58,46 +77,36 @@ function RouteComponent() {
     window.location.href = '/';
   };
 
-  // Dummy Data
-  const activeJobs = [
-    {
-      id: '1',
-      title: 'DeFi Dashboard Frontend',
-      client: '0x1234...5678',
-      budget: '2.5 ETH',
-      status: 'In Progress',
-      deadline: '2 days left',
-    },
-    {
-      id: '2',
-      title: 'Smart Contract Audit',
-      client: '0x8765...4321',
-      budget: '1.0 ETH',
-      status: 'Funded',
-      deadline: '1 week left',
-    },
-  ];
+  const { data: myJobs } = useQuery(trpc.job.getMyJobs.queryOptions());
 
-  const jobHistory = [
-    {
-      id: '3',
-      title: 'NFT Marketplace UI',
-      client: '0xabcd...efgh',
-      budget: '3.0 ETH',
-      status: 'Completed',
-      completedAt: '2 weeks ago',
-      rating: 5,
-    },
-    {
-      id: '4',
-      title: 'Token Vesting Contract',
-      client: '0xijkl...mnop',
-      budget: '1.5 ETH',
-      status: 'Completed',
-      completedAt: '1 month ago',
-      rating: 4,
-    },
-  ];
+  const activeJobs = useMemo(() => {
+    return (
+      myJobs?.filter(
+        (job) => job.status !== 'COMPLETED' && job.status !== 'CANCELLED',
+      ) || []
+    );
+  }, [myJobs]);
+
+  const jobHistory = useMemo(() => {
+    return (
+      myJobs?.filter(
+        (job) => job.status === 'COMPLETED' || job.status === 'CANCELLED',
+      ) || []
+    );
+  }, [myJobs]);
+
+  const jobsCompleted = useMemo(() => {
+    return myJobs?.filter((job) => job.status === 'COMPLETED').length || 0;
+  }, [myJobs]);
+
+  const reviews = useMemo(() => {
+    return myJobs?.flatMap((job: MyJobsOutput[number]) => job.reviews) || [];
+  }, [myJobs]);
+
+  const avgRating = useMemo(() => {
+    if (reviews.length === 0) return 0;
+    return reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length;
+  }, [reviews]);
 
   return (
     <div className='container mx-auto max-w-7xl py-8 space-y-8'>
@@ -120,15 +129,17 @@ function RouteComponent() {
               </span>
               <span>•</span>
               <span className='flex items-center gap-1 text-sm font-mono'>
-                <Wallet className='h-3 w-3' />{' '}
-                {shortenAddress(session?.user?.id || '')}
+                <Wallet className='h-3 w-3' /> {shortenAddress(address || '')}
               </span>
             </div>
           </div>
         </div>
         <div className='flex gap-3'>
           {currentUser?.role !== 'FREELANCER' && (
-            <Button onClick={() => applyAsFreelancer()} disabled={isApplying}>
+            <Button
+              onClick={() => applyAsFreelancer({ walletAddress: address })}
+              disabled={isApplying}
+            >
               {isApplying ? 'Applying...' : 'Become a Freelancer'}
             </Button>
           )}
@@ -139,7 +150,7 @@ function RouteComponent() {
       </div>
 
       {/* Stats Grid */}
-      <div className='grid gap-4 md:grid-cols-3'>
+      <div className='grid gap-4 md:grid-cols-4'>
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
             <CardTitle className='text-sm font-medium'>
@@ -148,9 +159,27 @@ function RouteComponent() {
             <Wallet className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>12.5 ETH</div>
+            <div className='text-2xl font-bold'>
+              {formatEther(BigInt(currentUser?.totalEarned?.toString() || '0'))}{' '}
+              ETH
+            </div>
             <p className='text-xs text-muted-foreground'>
-              +2.1 ETH from last month
+              Lifetime earnings as freelancer
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+            <CardTitle className='text-sm font-medium'>Total Spent</CardTitle>
+            <Wallet className='h-4 w-4 text-muted-foreground' />
+          </CardHeader>
+          <CardContent>
+            <div className='text-2xl font-bold'>
+              {formatEther(BigInt(currentUser?.totalSpent?.toString() || '0'))}{' '}
+              ETH
+            </div>
+            <p className='text-xs text-muted-foreground'>
+              Lifetime spent as client
             </p>
           </CardContent>
         </Card>
@@ -162,9 +191,12 @@ function RouteComponent() {
             <CheckCircle2 className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>14</div>
+            <div className='text-2xl font-bold'>{jobsCompleted}</div>
             <p className='text-xs text-muted-foreground'>
-              100% completion rate
+              {myJobs?.length
+                ? Math.round((jobsCompleted / myJobs.length) * 100)
+                : 0}
+              % completion rate
             </p>
           </CardContent>
         </Card>
@@ -174,8 +206,10 @@ function RouteComponent() {
             <Star className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>4.9</div>
-            <p className='text-xs text-muted-foreground'>Based on 12 reviews</p>
+            <div className='text-2xl font-bold'>{avgRating.toFixed(1)}</div>
+            <p className='text-xs text-muted-foreground'>
+              Based on {reviews.length} reviews
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -187,13 +221,20 @@ function RouteComponent() {
           <TabsTrigger value='history'>History</TabsTrigger>
         </TabsList>
         <TabsContent value='active' className='mt-6 space-y-4'>
-          {activeJobs.map((job) => (
+          {activeJobs.length === 0 && (
+            <p className='text-center py-12 text-muted-foreground'>
+              No active jobs found.
+            </p>
+          )}
+          {activeJobs.map((job: MyJobsOutput[number]) => (
             <Card key={job.id}>
               <CardHeader>
                 <div className='flex items-start justify-between'>
                   <div className='space-y-1'>
                     <CardTitle className='text-base'>{job.title}</CardTitle>
-                    <CardDescription>Client: {job.client}</CardDescription>
+                    <CardDescription>
+                      Client: {shortenAddress(job.clientWallet)}
+                    </CardDescription>
                   </div>
                   <Badge variant='secondary'>{job.status}</Badge>
                 </div>
@@ -202,57 +243,75 @@ function RouteComponent() {
                 <div className='flex items-center justify-between text-sm'>
                   <div className='flex items-center gap-4 text-muted-foreground'>
                     <span className='flex items-center gap-1'>
-                      <Wallet className='h-3 w-3' /> {job.budget}
+                      <Wallet className='h-3 w-3' />{' '}
+                      {formatEther(BigInt(job.totalAmount))} ETH
                     </span>
                     <span className='flex items-center gap-1'>
-                      <Briefcase className='h-3 w-3' /> {job.deadline}
+                      <Briefcase className='h-3 w-3' /> {job.milestones.length}{' '}
+                      Milestones
                     </span>
                   </div>
-                  <Button variant='ghost' size='sm' className='text-primary'>
-                    View Details
-                  </Button>
+                  <Link to={`/jobs/$id`} params={{ id: job.id }}>
+                    <Button variant='ghost' size='sm' className='text-primary'>
+                      View Details
+                    </Button>
+                  </Link>
                 </div>
               </CardContent>
             </Card>
           ))}
         </TabsContent>
         <TabsContent value='history' className='mt-6 space-y-4'>
-          {jobHistory.map((job) => (
-            <Card key={job.id}>
-              <CardHeader>
-                <div className='flex items-start justify-between'>
-                  <div className='space-y-1'>
-                    <CardTitle className='text-base'>{job.title}</CardTitle>
-                    <CardDescription>Client: {job.client}</CardDescription>
+          {jobHistory.length === 0 && (
+            <p className='text-center py-12 text-muted-foreground'>
+              No job history found.
+            </p>
+          )}
+          {jobHistory.map((job: MyJobsOutput[number]) => {
+            const jobReview = job.reviews?.[0];
+            return (
+              <Card key={job.id}>
+                <CardHeader>
+                  <div className='flex items-start justify-between'>
+                    <div className='space-y-1'>
+                      <CardTitle className='text-base'>{job.title}</CardTitle>
+                      <CardDescription>
+                        Client: {shortenAddress(job.clientWallet)}
+                      </CardDescription>
+                    </div>
+                    <Badge
+                      variant='outline'
+                      className='bg-green-500/10 text-green-600 border-green-500/20'
+                    >
+                      {job.status}
+                    </Badge>
                   </div>
-                  <Badge
-                    variant='outline'
-                    className='bg-green-500/10 text-green-600 border-green-500/20'
-                  >
-                    {job.status}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className='flex items-center justify-between text-sm'>
-                  <div className='flex items-center gap-4 text-muted-foreground'>
-                    <span className='flex items-center gap-1'>
-                      <Wallet className='h-3 w-3' /> {job.budget}
-                    </span>
-                    <span className='flex items-center gap-1'>
-                      <CheckCircle2 className='h-3 w-3' /> {job.completedAt}
-                    </span>
+                </CardHeader>
+                <CardContent>
+                  <div className='flex items-center justify-between text-sm'>
+                    <div className='flex items-center gap-4 text-muted-foreground'>
+                      <span className='flex items-center gap-1'>
+                        <Wallet className='h-3 w-3' />{' '}
+                        {formatEther(BigInt(job.totalAmount))} ETH
+                      </span>
+                      <span className='flex items-center gap-1'>
+                        <CheckCircle2 className='h-3 w-3' />{' '}
+                        {new Date(job.updatedAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    {jobReview && (
+                      <div className='flex items-center gap-1 text-yellow-500'>
+                        <Star className='h-3 w-3 fill-current' />
+                        <span className='font-medium text-foreground'>
+                          {jobReview.rating}.0
+                        </span>
+                      </div>
+                    )}
                   </div>
-                  <div className='flex items-center gap-1 text-yellow-500'>
-                    <Star className='h-3 w-3 fill-current' />
-                    <span className='font-medium text-foreground'>
-                      {job.rating}.0
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            );
+          })}
         </TabsContent>
       </Tabs>
     </div>

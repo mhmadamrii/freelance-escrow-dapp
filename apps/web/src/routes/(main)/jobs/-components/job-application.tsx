@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { useTRPC } from '@/utils/trpc';
@@ -28,6 +29,7 @@ export function JobApplication({
   clientWallet: string;
 }) {
   const trpc = useTRPC();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [coverLetter, setCoverLetter] = useState('');
 
@@ -36,6 +38,7 @@ export function JobApplication({
   const { mutate: createJobApplication, isPending } = useMutation(
     trpc.job.createJobApplication.mutationOptions({
       onSuccess: () => {
+        navigate({ to: '/jobs/$id', params: { id: jobId } });
         toast.success('Job application created successfully!');
         setOpen(false);
       },

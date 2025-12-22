@@ -11,8 +11,9 @@ model User {
     name          String?
     image         String?
     role          UserRole @default(CLIENT) // CLIENT | FREELANCER | BOTH
-    totalSpent    Int      @default(0)
-    totalEarned   Int      @default(0)
+    totalSpent    Decimal  @default(0) @db.Decimal(38, 0)
+    totalEarned   Decimal  @default(0) @db.Decimal(38, 0)
+    walletAddress String?  @unique
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt

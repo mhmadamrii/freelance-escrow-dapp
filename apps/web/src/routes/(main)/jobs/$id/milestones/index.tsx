@@ -1,4 +1,5 @@
 import abi from '@/lib/abi.json';
+
 import { RaiseDispute } from '../../-components/raise-dispute';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -9,7 +10,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { FREELANCE_ESCROW_ADDRESS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
-import { encodePacked, keccak256 } from 'viem';
+import { encodePacked, keccak256, formatEther } from 'viem';
 import { AlertCircleIcon, Loader2 } from 'lucide-react'; // Suggested for loading states
 
 import {
@@ -174,7 +175,7 @@ function RouteComponent() {
 
             <CardContent className='space-y-2'>
               <p className='text-sm text-muted-foreground'>
-                Amount: {item.amount} ETH
+                Amount: {formatEther(BigInt(item.amount.toString()))} ETH
               </p>
               <p className='text-xs truncate text-muted-foreground'>
                 Hash: {item.descriptionHash}
