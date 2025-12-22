@@ -16,12 +16,31 @@ export function StatusBadge({ status }: { status: string }) {
       'bg-red-500/15 text-red-600 dark:text-red-400 hover:bg-red-500/25 border-red-500/20',
   };
 
+  const _renderLabel = (status: string) => {
+    switch (status) {
+      case 'CREATED':
+        return 'Open';
+      case 'FUNDED':
+        return 'Funded';
+      case 'WAITING_FUNDING':
+        return 'Waiting Funding';
+      case 'IN_PROGRESS':
+        return 'In Progress';
+      case 'COMPLETED':
+        return 'Closed';
+      case 'DISPUTED':
+        return 'Disputed';
+      default:
+        return status;
+    }
+  };
+
   return (
     <Badge
       variant='outline'
       className={`px-3 py-1 capitalize ${styles[status] || ''}`}
     >
-      {status?.replace('_', ' ').toLowerCase()}
+      {_renderLabel(status)}
     </Badge>
   );
 }

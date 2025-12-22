@@ -6,7 +6,7 @@ export function Header() {
   const links = [
     {
       to: '/dashboard',
-      label: 'Home',
+      label: 'Dashboard',
       icon: null,
     },
     {

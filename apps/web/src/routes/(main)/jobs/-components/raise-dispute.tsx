@@ -1,15 +1,11 @@
 import abi from '@/lib/abi.json';
 
 import { useEffect } from 'react';
-import {
-  useWriteContract,
-  useWaitForTransactionReceipt,
-  useAccount,
-} from 'wagmi';
+import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { FREELANCE_ESCROW_ADDRESS } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { AlertTriangle, Loader2 } from 'lucide-react';
+import { AlertTriangle, Check, CheckCircle, Loader2 } from 'lucide-react';
 import { useTRPC } from '@/utils/trpc';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
@@ -28,11 +24,19 @@ import {
 interface RaiseDisputeProps {
   jobId: string; // The DB UUID
   onChainJobId: number; // The uint256 ID from the contract
+  isDisable: boolean;
+  isConfirmComplete: boolean;
 }
 
-export function RaiseDispute({ jobId, onChainJobId }: RaiseDisputeProps) {
+export function RaiseDispute({
+  jobId,
+  onChainJobId,
+  isDisable,
+  isConfirmComplete,
+}: RaiseDisputeProps) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+
   const {
     data: hash,
     writeContract,
@@ -53,6 +57,15 @@ export function RaiseDispute({ jobId, onChainJobId }: RaiseDisputeProps) {
     }),
   );
 
+  const { mutate: updateJobStatus } = useMutation(
+    trpc.job.updateJobStatus.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries();
+        toast.success('Job has been successfully completed');
+      },
+    }),
+  );
+
   const handleRaiseDispute = () => {
     writeContract({
       address: FREELANCE_ESCROW_ADDRESS as `0x${string}`,
@@ -64,7 +77,6 @@ export function RaiseDispute({ jobId, onChainJobId }: RaiseDisputeProps) {
 
   const isProcessing = isWalletPending || isTxLoading;
 
-  // Update DB once the blockchain confirms the dispute
   useEffect(() => {
     if (isTxSuccess) {
       updateDbStatus({
@@ -76,12 +88,32 @@ export function RaiseDispute({ jobId, onChainJobId }: RaiseDisputeProps) {
 
   return (
     <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button variant='destructive' size='sm' className='gap-2'>
-          <AlertTriangle className='h-4 w-4' />
-          Raise Dispute
-        </Button>
-      </AlertDialogTrigger>
+      <div className='flex gap-2 items-center'>
+        {isConfirmComplete ? (
+          <Button
+            onClick={() => {
+              updateJobStatus({
+                jobId: jobId,
+                status: 'COMPLETED',
+              });
+            }}
+          >
+            <CheckCircle className='h-4 w-4' />
+            Confirm Complete
+          </Button>
+        ) : (
+          <AlertDialogTrigger asChild>
+            <Button
+              disabled={isDisable}
+              variant='destructive'
+              className='gap-2'
+            >
+              <AlertTriangle className='h-4 w-4' />
+              Raise Dispute
+            </Button>
+          </AlertDialogTrigger>
+        )}
+      </div>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>

@@ -1,3 +1,14 @@
+import { useTRPC } from '@/utils/trpc';
+import { useQuery } from '@tanstack/react-query';
+import { formatEther } from 'viem';
+import { format } from 'date-fns';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { useNavigate } from '@tanstack/react-router';
+import { JobApplication } from './job-application';
+import { StatusBadge } from './status-badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
 import {
   Sheet,
   SheetContent,
@@ -7,10 +18,7 @@ import {
   SheetTrigger,
   SheetFooter,
 } from '@/components/ui/sheet';
-import { useTRPC } from '@/utils/trpc';
-import { useQuery } from '@tanstack/react-query';
-import { formatEther } from 'viem';
-import { format } from 'date-fns';
+
 import {
   Calendar,
   Clock,
@@ -21,12 +29,6 @@ import {
   CheckCircle2,
   Loader2,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { useNavigate } from '@tanstack/react-router';
-import { JobApplication } from './job-application';
-import { StatusBadge } from './status-badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface JobDetailSheetProps {
   jobId: string;
@@ -41,6 +43,7 @@ export function JobDetailSheet({
 }: JobDetailSheetProps) {
   const trpc = useTRPC();
   const navigate = useNavigate();
+
   const { data: job, isLoading } = useQuery(
     trpc.job.jobById.queryOptions({ jobId }),
   );
@@ -62,7 +65,7 @@ export function JobDetailSheet({
                   ID: {job.id.slice(0, 8)}...
                 </span>
               </div>
-              <SheetTitle className='text-2xl font-bold'>
+              <SheetTitle className='text-4xl font-bold'>
                 {job.title}
               </SheetTitle>
               <SheetDescription className='text-base leading-relaxed'>

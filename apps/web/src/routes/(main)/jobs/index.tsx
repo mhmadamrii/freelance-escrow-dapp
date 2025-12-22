@@ -1,17 +1,4 @@
-import abi from '@/lib/abi.json';
-
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import {
-  Calendar,
-  Clock,
-  FileUser,
-  Trash2,
-  Wallet,
-  ArrowRight,
-  Users,
-  Bitcoin,
-} from 'lucide-react';
-import { useReadContract } from 'wagmi';
+import { createFileRoute } from '@tanstack/react-router';
 import { formatEther } from 'viem';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useTRPC } from '@/utils/trpc';
@@ -23,9 +10,16 @@ import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { JobDetailSheet } from './-components/job-detail-sheet';
 import { StatusBadge } from './-components/status-badge';
-import { Badge } from '@/components/ui/badge';
 
-const CONTRACT_ADDRESS = '0x5FbDB2315678afecb367f032d93F642f64180aa3';
+import {
+  Clock,
+  FileUser,
+  Trash2,
+  Wallet,
+  ArrowRight,
+  Users,
+  Bitcoin,
+} from 'lucide-react';
 
 export const Route = createFileRoute('/(main)/jobs/')({
   component: RouteComponent,
@@ -50,7 +44,7 @@ function RouteComponent() {
   );
 
   return (
-    <div className='min-h-screen bg-linear-to-b from-background to-muted/20 py-16 px-6'>
+    <div className='min-h-screen py-12 bg-linear-to-b from-background to-muted/20'>
       <div className='max-w-7xl mx-auto'>
         <div className='flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12'>
           <div>
@@ -62,19 +56,7 @@ function RouteComponent() {
               payments, transparent milestones, and verified clients.
             </p>
           </div>
-          <div className='flex items-center gap-3 bg-card border rounded-2xl p-4 shadow-sm'>
-            <div className='h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary'>
-              <Users className='h-6 w-6' />
-            </div>
-            <div>
-              <p className='text-sm text-muted-foreground font-medium'>
-                Active Jobs
-              </p>
-              <p className='text-2xl font-bold'>{allJobs?.length || 0}</p>
-            </div>
-          </div>
         </div>
-
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8'>
           {allJobs?.map((job) => (
             <div
@@ -88,7 +70,6 @@ function RouteComponent() {
                   <Wallet className='h-24 w-24 -rotate-12' />
                 )}
               </div>
-
               <div className='flex justify-between items-start relative z-10'>
                 <StatusBadge status={job.status} />
                 {user?.role === 'CLIENT' && (
@@ -103,7 +84,6 @@ function RouteComponent() {
                   </Button>
                 )}
               </div>
-
               <div className='relative z-10'>
                 <h2 className='text-xl font-bold mb-2 group-hover:text-primary transition-colors line-clamp-1'>
                   {job.title}
@@ -112,7 +92,6 @@ function RouteComponent() {
                   {job.description}
                 </p>
               </div>
-
               <div className='grid grid-cols-2 gap-4 relative z-10'>
                 <div className='flex items-center gap-2 text-sm font-semibold text-primary bg-primary/5 rounded-lg px-3 py-2'>
                   <Wallet className='w-4 h-4' />
@@ -123,9 +102,7 @@ function RouteComponent() {
                   <span>{job.milestones.length} Milestones</span>
                 </div>
               </div>
-
               <Separator className='opacity-50' />
-
               <div className='flex items-center justify-between relative z-10'>
                 <div className='flex items-center gap-3'>
                   <Avatar className='h-10 w-10 border-2 border-background shadow-sm'>
@@ -164,7 +141,6 @@ function RouteComponent() {
             </div>
           ))}
         </div>
-
         {allJobs?.length === 0 && (
           <div className='flex flex-col items-center justify-center py-24 text-center'>
             <div className='h-20 w-20 rounded-full bg-muted flex items-center justify-center mb-6'>

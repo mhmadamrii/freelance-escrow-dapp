@@ -100,7 +100,7 @@ function RouteComponent() {
   ];
 
   return (
-    <div className='container mx-auto max-w-5xl px-4 py-8 space-y-8'>
+    <div className='container mx-auto max-w-7xl py-8 space-y-8'>
       {/* Header Section */}
       <div className='flex flex-col md:flex-row gap-6 items-start md:items-center justify-between'>
         <div className='flex items-center gap-4'>

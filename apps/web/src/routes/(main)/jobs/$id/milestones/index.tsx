@@ -114,6 +114,7 @@ function RouteComponent() {
       );
       const newStatus =
         milestone?.status === 'IN_PROGRESS' ? 'SUBMITTED' : 'COMPLETED';
+      console.log('new status', newStatus);
 
       updateStatus({
         milestoneId: activeMilestoneId,
@@ -140,6 +141,14 @@ function RouteComponent() {
           <RaiseDispute
             jobId={id}
             onChainJobId={Number(data?.onChainId ?? 0)}
+            isDisable={
+              (data?.milestones.every((m) => m.status === 'COMPLETED') ||
+                data?.milestones.every((m) => m.status === 'PENDING')) ??
+              false
+            }
+            isConfirmComplete={
+              data?.milestones.every((m) => m.status === 'COMPLETED') ?? false
+            }
           />
         </div>
       )}
@@ -173,7 +182,6 @@ function RouteComponent() {
             </CardContent>
 
             <CardFooter className='flex gap-2'>
-              {/* CLIENT ACTIONS */}
               {isClient && item.status === 'SUBMITTED' && (
                 <Button
                   disabled={isProcessing}
