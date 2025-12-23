@@ -148,7 +148,9 @@ function RouteComponent() {
               false
             }
             isConfirmComplete={
-              data?.milestones.every((m) => m.status === 'COMPLETED') ?? false
+              (data?.milestones.every((m) => m.status === 'COMPLETED') &&
+                address === data?.clientWallet) ??
+              false
             }
           />
         </div>
@@ -197,7 +199,6 @@ function RouteComponent() {
                 </Button>
               )}
 
-              {/* FREELANCER ACTIONS */}
               {!isClient && (
                 <>
                   {item.status === 'PENDING' && (

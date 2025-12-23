@@ -9,6 +9,7 @@
     'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
   --animate-fade-in-up: fade-in-up 0.5s ease-out forwards;
+  --animate-shiny-text: shiny-text 5s infinite;
 
   @keyframes fade-in-up {
     0% {
@@ -18,6 +19,15 @@
     100% {
       opacity: 1;
       transform: translateY(0);
+    }
+  }
+
+  @keyframes shiny-text {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
     }
   }
 }

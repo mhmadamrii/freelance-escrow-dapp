@@ -1,6 +1,23 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { ShieldCheck, Zap, Globe, Layers, Coins, Lock } from 'lucide-react';
+import {
+  ShieldCheck,
+  Zap,
+  Globe,
+  Layers,
+  Coins,
+  Lock,
+  ArrowRight,
+  Github,
+  Twitter,
+  MessageSquare,
+} from 'lucide-react';
+import { motion } from 'motion/react';
+import SpotlightCard from '@/components/react-bits/SpotlightCard';
+import ShinyText from '@/components/react-bits/ShinyText';
+import DecryptedText from '@/components/react-bits/DecryptedText';
+import SplitText from '@/components/react-bits/SplitText';
+import CountUp from '@/components/react-bits/CountUp';
 
 export const Route = createFileRoute('/(public)/')({
   component: LandingPage,
@@ -8,57 +25,98 @@ export const Route = createFileRoute('/(public)/')({
 
 function LandingPage() {
   return (
-    <div className='min-h-screen flex flex-col'>
-      {/* Hero Section */}
-      <section className='relative pt-20 pb-32 overflow-hidden'>
-        <div className='absolute inset-0 bg-[radial-gradient(ellipse_at_top,var(--tw-gradient-stops))] from-primary/20 via-background to-background' />
+    <div className='min-h-screen bg-[#030303] text-white selection:bg-primary/30'>
+      {/* Background Elements */}
+      <div className='fixed inset-0 z-0 overflow-hidden pointer-events-none'>
+        <div className='absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 rounded-full blur-[120px]' />
+        <div className='absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-500/10 rounded-full blur-[120px]' />
+        <div className='absolute inset-0 bg-[url("https://grainy-gradients.vercel.app/noise.svg")] opacity-20 brightness-100 contrast-150' />
+      </div>
 
-        <div className='container relative z-10 mx-auto px-4 text-center'>
-          <div className='inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-sm font-medium text-primary mb-8 animate-fade-in-up'>
-            <span className='flex h-2 w-2 rounded-full bg-primary mr-2'></span>
-            Live on Sepolia Testnet
+      {/* Hero Section */}
+      <section className='relative pt-32 pb-20 overflow-hidden z-10'>
+        <div className='container mx-auto px-4 text-center'>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className='inline-flex items-center rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-sm font-medium mb-8 backdrop-blur-md'
+          >
+            <span className='flex h-2 w-2 rounded-full bg-green-500 mr-2 animate-pulse'></span>
+            <ShinyText text='Live on Sepolia Testnet' speed={3} />
+          </motion.div>
+
+          <div className='max-w-4xl mx-auto mb-8'>
+            <SplitText
+              text='The Future of Freelancing is'
+              className='text-5xl md:text-8xl font-bold tracking-tight justify-center leading-tight'
+            />
+            <div className='text-5xl md:text-8xl font-bold tracking-tight text-primary mt-2'>
+              <DecryptedText
+                text='Trustless'
+                speed={80}
+                maxIterations={15}
+                animateOn='view'
+              />
+            </div>
           </div>
 
-          <h1 className='text-5xl md:text-7xl font-bold tracking-tight mb-6 bg-linear-to-b from-foreground to-foreground/70 bg-clip-text text-transparent animate-fade-in-up animation-delay-100'>
-            The Future of Freelancing <br /> is{' '}
-            <span className='text-primary'>Trustless</span>
-          </h1>
-
-          <p className='text-xl text-muted-foreground max-w-2xl mx-auto mb-10 animate-fade-in-up animation-delay-200'>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8 }}
+            className='text-xl text-gray-400 max-w-2xl mx-auto mb-12 leading-relaxed'
+          >
             Smart contracts ensure you get paid. No middlemen, just code. Secure
             milestone-based payments with any ERC20 token.
-          </p>
+          </motion.p>
 
-          <div className='flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up animation-delay-300'>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 1 }}
+            className='flex flex-col sm:flex-row gap-6 justify-center items-center'
+          >
             <Link to='/auth'>
-              <button className='w-full sm:w-auto px-8 py-4 text-lg font-semibold bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/25'>
-                Post a Job
+              <button className='group relative px-8 py-4 text-lg font-semibold bg-primary text-primary-foreground rounded-2xl hover:scale-105 transition-all shadow-[0_0_20px_rgba(var(--primary),0.3)]'>
+                <span className='flex items-center gap-2'>
+                  Get Started{' '}
+                  <ArrowRight className='h-5 w-5 group-hover:translate-x-1 transition-transform' />
+                </span>
               </button>
             </Link>
             <Link to='/jobs'>
-              <button className='w-full sm:w-auto px-8 py-4 text-lg font-semibold border border-border bg-background hover:bg-muted/50 text-foreground rounded-xl transition-all'>
-                Find Work
+              <button className='px-8 py-4 text-lg font-semibold border border-white/10 bg-white/5 hover:bg-white/10 text-white rounded-2xl transition-all backdrop-blur-md'>
+                Explore Jobs
               </button>
             </Link>
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* Stats Section */}
-      <section className='py-12 border-y border-border/50 bg-muted/20'>
+      <section className='py-20 relative z-10'>
         <div className='container mx-auto px-4'>
-          <div className='grid grid-cols-2 md:grid-cols-4 gap-8 text-center'>
+          <div className='grid grid-cols-2 md:grid-cols-4 gap-12'>
             {[
-              { label: 'Total Value Locked', value: '$2.4M+' },
-              { label: 'Jobs Completed', value: '1,200+' },
-              { label: 'Freelancers', value: '850+' },
-              { label: 'Avg. Dispute Rate', value: '< 1%' },
+              {
+                label: 'Total Value Locked',
+                value: 2400000,
+                prefix: '$',
+                suffix: '+',
+              },
+              { label: 'Jobs Completed', value: 1200, suffix: '+' },
+              { label: 'Freelancers', value: 850, suffix: '+' },
+              { label: 'Dispute Rate', value: 1, prefix: '< ', suffix: '%' },
             ].map((stat, i) => (
-              <div key={i} className='space-y-2'>
-                <h3 className='text-3xl md:text-4xl font-bold text-foreground'>
-                  {stat.value}
-                </h3>
-                <p className='text-sm text-muted-foreground uppercase tracking-wider'>
+              <div key={i} className='text-center group'>
+                <div className='text-4xl md:text-5xl font-bold mb-2 bg-linear-to-b from-white to-gray-500 bg-clip-text text-transparent'>
+                  <CountUp
+                    to={stat.value}
+                    prefix={stat.prefix}
+                    suffix={stat.suffix}
+                  />
+                </div>
+                <p className='text-sm text-gray-500 uppercase tracking-[0.2em] font-medium'>
                   {stat.label}
                 </p>
               </div>
@@ -68,19 +126,19 @@ function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section className='py-24 px-4'>
-        <div className='container mx-auto max-w-6xl'>
-          <div className='text-center mb-16'>
-            <h2 className='text-3xl md:text-5xl font-bold mb-4'>
-              Why Choose EscrowDapp?
+      <section className='py-32 relative z-10'>
+        <div className='container mx-auto px-4'>
+          <div className='text-center mb-20'>
+            <h2 className='text-4xl md:text-6xl font-bold mb-6'>
+              Built for the <span className='text-primary'>New Economy</span>
             </h2>
-            <p className='text-muted-foreground text-lg max-w-2xl mx-auto'>
-              We combine the flexibility of traditional freelancing platforms
-              with the security of blockchain technology.
+            <p className='text-gray-400 text-xl max-w-2xl mx-auto'>
+              Decentralized infrastructure that puts power back in the hands of
+              creators.
             </p>
           </div>
 
-          <div className='grid md:grid-cols-3 gap-8'>
+          <div className='grid md:grid-cols-3 gap-6'>
             <FeatureCard
               icon={Lock}
               title='Smart Escrow'
@@ -116,83 +174,93 @@ function LandingPage() {
       </section>
 
       {/* How It Works */}
-      <section className='py-24 bg-muted/30'>
-        <div className='container mx-auto px-4 max-w-5xl'>
-          <h2 className='text-3xl md:text-4xl font-bold text-center mb-16'>
-            How It Works
+      <section className='py-32 relative z-10 bg-white/2 border-y border-white/5'>
+        <div className='container mx-auto px-4'>
+          <h2 className='text-4xl md:text-5xl font-bold text-center mb-20'>
+            The Workflow
           </h2>
 
-          <div className='relative'>
-            {/* Connecting Line (Desktop) */}
-            <div className='hidden md:block absolute top-1/2 left-0 w-full h-0.5 bg-border -translate-y-1/2 z-0' />
-
-            <div className='grid md:grid-cols-3 gap-12 relative z-10'>
-              <StepCard
-                number='01'
-                title='Create & Fund'
-                description='Client posts a job and deposits funds into the secure escrow smart contract.'
-              />
-              <StepCard
-                number='02'
-                title='Work & Submit'
-                description='Freelancer completes milestones and submits proof of work on-chain.'
-              />
-              <StepCard
-                number='03'
-                title='Approve & Pay'
-                description='Client reviews the work. Once approved, the contract releases funds instantly.'
-              />
-            </div>
+          <div className='grid md:grid-cols-3 gap-12'>
+            <StepCard
+              number='01'
+              title='Create & Fund'
+              description='Client posts a job and deposits funds into the secure escrow smart contract.'
+            />
+            <StepCard
+              number='02'
+              title='Work & Submit'
+              description='Freelancer completes milestones and submits proof of work on-chain.'
+            />
+            <StepCard
+              number='03'
+              title='Approve & Pay'
+              description='Client reviews the work. Once approved, the contract releases funds instantly.'
+            />
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className='py-32 px-4 text-center'>
-        <div className='container mx-auto max-w-3xl bg-linear-to-br from-primary/10 to-transparent p-12 rounded-3xl border border-primary/20'>
-          <h2 className='text-4xl font-bold mb-6'>Ready to Start Building?</h2>
-          <p className='text-xl text-muted-foreground mb-10'>
-            Join the decentralized workforce today. Secure, transparent, and
-            fair for everyone.
-          </p>
-          <div className='flex justify-center'>
-            <ConnectButton />
-          </div>
+      <section className='py-40 relative z-10'>
+        <div className='container mx-auto px-4'>
+          <SpotlightCard className='max-w-5xl mx-auto text-center py-20 bg-primary/5 border-primary/20'>
+            <h2 className='text-5xl font-bold mb-8'>
+              Ready to Start Building?
+            </h2>
+            <p className='text-2xl text-gray-400 mb-12 max-w-2xl mx-auto'>
+              Join the decentralized workforce today. Secure, transparent, and
+              fair for everyone.
+            </p>
+            <div className='flex justify-center scale-125'>
+              <ConnectButton />
+            </div>
+          </SpotlightCard>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className='border-t border-border py-12 bg-muted/10'>
+      <footer className='border-t border-white/5 py-20 relative z-10 bg-black'>
         <div className='container mx-auto px-4'>
-          <div className='grid md:grid-cols-4 gap-8 mb-12'>
+          <div className='grid md:grid-cols-4 gap-12 mb-20'>
             <div className='col-span-2'>
-              <div className='flex items-center gap-2 font-bold text-xl mb-4'>
-                <div className='flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground'>
-                  <ShieldCheck className='h-5 w-5' />
+              <div className='flex items-center gap-2 font-bold text-2xl mb-6'>
+                <div className='flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground'>
+                  <ShieldCheck className='h-6 w-6' />
                 </div>
-                <span>EscrowDapp</span>
+                <span>OnWork</span>
               </div>
-              <p className='text-muted-foreground max-w-xs'>
+              <p className='text-gray-500 text-lg max-w-xs leading-relaxed'>
                 The world's most secure decentralized freelancing platform.
                 Built for the future of work.
               </p>
             </div>
 
             <div>
-              <h4 className='font-semibold mb-4'>Platform</h4>
-              <ul className='space-y-2 text-sm text-muted-foreground'>
+              <h4 className='font-bold text-white mb-6 uppercase tracking-widest text-sm'>
+                Platform
+              </h4>
+              <ul className='space-y-4 text-gray-500'>
                 <li>
-                  <Link to='/jobs' className='hover:text-foreground'>
+                  <Link
+                    to='/jobs'
+                    className='hover:text-primary transition-colors'
+                  >
                     Find Work
                   </Link>
                 </li>
                 <li>
-                  <Link to='/jobs/create' className='hover:text-foreground'>
+                  <Link
+                    to='/jobs/create'
+                    className='hover:text-primary transition-colors'
+                  >
                     Post a Job
                   </Link>
                 </li>
                 <li>
-                  <Link to='/dashboard' className='hover:text-foreground'>
+                  <Link
+                    to='/dashboard'
+                    className='hover:text-primary transition-colors'
+                  >
                     Dashboard
                   </Link>
                 </li>
@@ -200,38 +268,43 @@ function LandingPage() {
             </div>
 
             <div>
-              <h4 className='font-semibold mb-4'>Legal</h4>
-              <ul className='space-y-2 text-sm text-muted-foreground'>
-                <li>
-                  <a href='#' className='hover:text-foreground'>
-                    Terms of Service
-                  </a>
-                </li>
-                <li>
-                  <a href='#' className='hover:text-foreground'>
-                    Privacy Policy
-                  </a>
-                </li>
-                <li>
-                  <a href='#' className='hover:text-foreground'>
-                    Smart Contract
-                  </a>
-                </li>
-              </ul>
+              <h4 className='font-bold text-white mb-6 uppercase tracking-widest text-sm'>
+                Connect
+              </h4>
+              <div className='flex gap-4'>
+                <a
+                  href='#'
+                  className='h-10 w-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-primary/20 hover:text-primary transition-all border border-white/10'
+                >
+                  <Twitter className='h-5 w-5' />
+                </a>
+                <a
+                  href='#'
+                  className='h-10 w-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-primary/20 hover:text-primary transition-all border border-white/10'
+                >
+                  <Github className='h-5 w-5' />
+                </a>
+                <a
+                  href='#'
+                  className='h-10 w-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-primary/20 hover:text-primary transition-all border border-white/10'
+                >
+                  <MessageSquare className='h-5 w-5' />
+                </a>
+              </div>
             </div>
           </div>
 
-          <div className='pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground'>
-            <p>© 2024 EscrowDapp. All rights reserved.</p>
-            <div className='flex gap-6'>
-              <a href='#' className='hover:text-foreground'>
-                Twitter
+          <div className='pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 text-gray-500 text-sm'>
+            <p>© 2024 OnWork. All rights reserved.</p>
+            <div className='flex gap-8'>
+              <a href='#' className='hover:text-white transition-colors'>
+                Terms
               </a>
-              <a href='#' className='hover:text-foreground'>
-                GitHub
+              <a href='#' className='hover:text-white transition-colors'>
+                Privacy
               </a>
-              <a href='#' className='hover:text-foreground'>
-                Discord
+              <a href='#' className='hover:text-white transition-colors'>
+                Contract
               </a>
             </div>
           </div>
@@ -251,13 +324,13 @@ function FeatureCard({
   description: string;
 }) {
   return (
-    <div className='p-6 rounded-2xl bg-card border border-border hover:border-primary/50 transition-colors shadow-sm hover:shadow-md'>
-      <div className='h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-4'>
-        <Icon className='h-6 w-6' />
+    <SpotlightCard className='group'>
+      <div className='h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform'>
+        <Icon className='h-7 w-7' />
       </div>
-      <h3 className='text-xl font-semibold mb-2'>{title}</h3>
-      <p className='text-muted-foreground'>{description}</p>
-    </div>
+      <h3 className='text-2xl font-bold mb-4'>{title}</h3>
+      <p className='text-gray-400 leading-relaxed'>{description}</p>
+    </SpotlightCard>
   );
 }
 
@@ -271,12 +344,15 @@ function StepCard({
   description: string;
 }) {
   return (
-    <div className='bg-background p-8 rounded-2xl border border-border relative'>
-      <div className='text-6xl font-bold text-muted/20 absolute top-4 right-6 select-none'>
+    <div className='relative p-10 rounded-3xl bg-white/3 border border-white/5 group hover:border-primary/30 transition-all'>
+      <div className='text-8xl font-black text-white/2 absolute top-4 right-8 select-none group-hover:text-primary/5 transition-colors'>
         {number}
       </div>
-      <h3 className='text-2xl font-bold mb-4 relative z-10'>{title}</h3>
-      <p className='text-muted-foreground relative z-10'>{description}</p>
+      <div className='relative z-10'>
+        <div className='text-primary font-mono mb-4'>Step {number}</div>
+        <h3 className='text-3xl font-bold mb-6'>{title}</h3>
+        <p className='text-gray-400 text-lg leading-relaxed'>{description}</p>
+      </div>
     </div>
   );
 }

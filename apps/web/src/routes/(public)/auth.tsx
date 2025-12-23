@@ -92,7 +92,6 @@ function RouteComponent() {
           setIsLoading(false);
         },
         onSuccess() {
-          queryClient.refetchQueries();
           toast.success("You're signed in successfully!");
           refetch();
           setIsLoading(false);

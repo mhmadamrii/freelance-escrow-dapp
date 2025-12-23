@@ -12,8 +12,8 @@ import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { format, formatDistanceToNow } from 'date-fns';
 import { motion } from 'motion/react';
-
 import { useAccount } from 'wagmi';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 import {
   Card,
@@ -32,6 +32,7 @@ import {
   FileText,
   Globe,
   ShieldCheck,
+  TriangleAlert,
   User,
   Wallet,
 } from 'lucide-react';
@@ -51,6 +52,8 @@ function RouteComponent() {
       jobId: id,
     }),
   );
+
+  console.log('current jjob', job);
 
   const isClient = job?.clientWallet.toLowerCase() === address?.toLowerCase();
   const isFreelancer =
@@ -80,6 +83,16 @@ function RouteComponent() {
       >
         <div className='lg:col-span-2 space-y-8'>
           <div className='space-y-4'>
+            {address == job?.clientWallet &&
+              job?.status == 'WAITING_FUNDING' && (
+                <Alert variant='destructive'>
+                  <TriangleAlert />
+                  <AlertTitle>
+                    This job already assigned to freelancer, please fund to
+                    proceed to next stage
+                  </AlertTitle>
+                </Alert>
+              )}
             <div className='flex items-center gap-2 text-sm text-muted-foreground'>
               <Briefcase className='h-4 w-4' />
               <span>Jobs</span>

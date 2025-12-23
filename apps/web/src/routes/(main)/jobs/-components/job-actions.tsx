@@ -7,6 +7,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTRPC } from '@/utils/trpc';
 import { Loader2 } from 'lucide-react';
 import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useNavigate } from '@tanstack/react-router';
 
 interface JobActionsProps {
   job: any;
@@ -23,6 +24,7 @@ export function JobActions({
 }: JobActionsProps) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const { data: hash, writeContract, isPending } = useWriteContract();
 
@@ -39,6 +41,12 @@ export function JobActions({
       onSuccess: () => {
         queryClient.invalidateQueries();
         toast.success('Job funded successfully!');
+        navigate({
+          to: '/jobs/$id/milestones',
+          params: {
+            id: job.id,
+          },
+        });
       },
       onError: (err) => {
         console.error('Error updating job status:', err);

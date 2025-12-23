@@ -48,6 +48,7 @@ import {
   AlertCircle,
   Loader2,
 } from 'lucide-react';
+import { useAccount } from 'wagmi';
 
 export const Route = createFileRoute('/(main)/dashboard/')({
   component: RouteComponent,
@@ -68,7 +69,6 @@ const chartConfig = {
 
 export function RouteComponent() {
   const trpc = useTRPC();
-  const [role, setRole] = useState<'client' | 'freelancer'>('client');
 
   const { data: currentUser } = useQuery(
     trpc.user.getCurrentUser.queryOptions(),
@@ -78,12 +78,17 @@ export function RouteComponent() {
     trpc.job.getMyJobs.queryOptions(),
   );
 
+  const role = useMemo(() => {
+    if (currentUser?.role === 'CLIENT') {
+      return 'client';
+    } else {
+      return 'freelancer';
+    }
+  }, [currentUser]);
+
   const stats = useMemo(() => {
     if (!myJobs || !currentUser) return null;
-
     const isClientView = role === 'client';
-
-    // Filter jobs based on role and user's relationship to the job
     const relevantJobs = myJobs.filter((job) => {
       if (isClientView) {
         return job.userId === currentUser.id;
@@ -219,19 +224,7 @@ export function RouteComponent() {
               Manage your trustless freelance contracts and milestones.
             </p>
           </div>
-
-          <Tabs
-            value={role}
-            onValueChange={(v) => setRole(v as any)}
-            className='w-full md:w-[400px]'
-          >
-            <TabsList className='grid w-full grid-cols-2'>
-              <TabsTrigger value='client'>Client View</TabsTrigger>
-              <TabsTrigger value='freelancer'>Freelancer View</TabsTrigger>
-            </TabsList>
-          </Tabs>
         </div>
-
         <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
           {stats.metrics.map((m, i) => (
             <Card key={i} className='hover:shadow-md transition-shadow'>
@@ -245,7 +238,6 @@ export function RouteComponent() {
             </Card>
           ))}
         </div>
-
         <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-7'>
           <Card className='col-span-full lg:col-span-4'>
             <CardHeader>
