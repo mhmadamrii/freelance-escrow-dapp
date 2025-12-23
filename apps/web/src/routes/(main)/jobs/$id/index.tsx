@@ -36,6 +36,7 @@ import {
   User,
   Wallet,
 } from 'lucide-react';
+import { BorderBeam } from '@/components/ui/border-beam';
 
 export const Route = createFileRoute('/(main)/jobs/$id/')({
   component: RouteComponent,

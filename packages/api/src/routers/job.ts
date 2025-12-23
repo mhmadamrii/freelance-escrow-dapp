@@ -4,7 +4,7 @@ import prisma from '@onwork/db';
 import type { AppRouter } from '.';
 import type { inferRouterOutputs } from '@trpc/server';
 
-import { protectedProcedure, router } from '..';
+import { protectedProcedure, publicProcedure, router } from '..';
 
 export const jobRouter = router({
   allJobs: protectedProcedure.query(({}) => {
@@ -251,8 +251,69 @@ export const jobRouter = router({
       },
     });
   }),
+  getExplorerData: publicProcedure
+    .input(
+      z.object({
+        query: z.string().optional(),
+        type: z.enum(['ALL', 'JOBS', 'MILESTONES']).default('ALL'),
+      }),
+    )
+    .query(async ({ input }) => {
+      const { query, type } = input;
+
+      const jobs =
+        type === 'ALL' || type === 'JOBS'
+          ? await prisma.job.findMany({
+              where: query
+                ? {
+                    OR: [
+                      { title: { contains: query, mode: 'insensitive' } },
+                      { description: { contains: query, mode: 'insensitive' } },
+                      {
+                        clientWallet: { contains: query, mode: 'insensitive' },
+                      },
+                    ],
+                  }
+                : {},
+              include: {
+                user: true,
+                milestones: true,
+              },
+              orderBy: { createdAt: 'desc' },
+              take: 20,
+            })
+          : [];
+
+      const milestones =
+        type === 'ALL' || type === 'MILESTONES'
+          ? await prisma.milestone.findMany({
+              where: query
+                ? {
+                    OR: [
+                      { description: { contains: query, mode: 'insensitive' } },
+                    ],
+                  }
+                : {},
+              include: {
+                job: {
+                  include: {
+                    user: true,
+                  },
+                },
+              },
+              orderBy: { updatedAt: 'desc' },
+              take: 20,
+            })
+          : [];
+
+      return {
+        jobs,
+        milestones,
+      };
+    }),
 });
 
 type RouterOutputs = inferRouterOutputs<AppRouter>;
 export type JobByIdOutput = RouterOutputs['job']['jobById'];
 export type MyJobsOutput = RouterOutputs['job']['getMyJobs'];
+export type ExplorerOutput = RouterOutputs['job']['getExplorerData'];

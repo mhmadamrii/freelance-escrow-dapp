@@ -8,6 +8,7 @@ import { useTRPC } from '@/utils/trpc';
 import { Loader2 } from 'lucide-react';
 import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { useNavigate } from '@tanstack/react-router';
+import { BorderBeam } from '@/components/ui/border-beam';
 
 interface JobActionsProps {
   job: any;
