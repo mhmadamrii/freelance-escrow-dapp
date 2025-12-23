@@ -43,6 +43,7 @@ export const jobRouter = router({
           'IN_PROGRESS',
           'COMPLETED',
           'DISPUTED',
+          'RESOLVED',
         ]),
       }),
     )
@@ -251,6 +252,30 @@ export const jobRouter = router({
       },
     });
   }),
+  getArbiterJobs: protectedProcedure.query(async ({ ctx }) => {
+    const user = await prisma.user.findUnique({
+      where: { id: ctx.session.user.id },
+    });
+
+    if (!user?.walletAddress) return [];
+
+    return prisma.job.findMany({
+      where: {
+        arbiter: {
+          equals: user.walletAddress,
+          mode: 'insensitive',
+        },
+        status: 'DISPUTED',
+      },
+      include: {
+        milestones: true,
+        user: true,
+      },
+      orderBy: {
+        updatedAt: 'desc',
+      },
+    });
+  }),
   getExplorerData: publicProcedure
     .input(
       z.object({
@@ -311,6 +336,17 @@ export const jobRouter = router({
         milestones,
       };
     }),
+  getDisputeStats: publicProcedure.query(async () => {
+    const [disputedCount, resolvedCount] = await Promise.all([
+      prisma.job.count({ where: { status: 'DISPUTED' } }),
+      prisma.job.count({ where: { status: 'RESOLVED' } }),
+    ]);
+
+    return {
+      disputedCount,
+      resolvedCount,
+    };
+  }),
 });
 
 type RouterOutputs = inferRouterOutputs<AppRouter>;

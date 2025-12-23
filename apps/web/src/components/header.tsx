@@ -1,6 +1,12 @@
 import { Link } from '@tanstack/react-router';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { Search, LayoutDashboard, ShieldCheck, Gauge } from 'lucide-react';
+import {
+  Search,
+  LayoutDashboard,
+  ShieldCheck,
+  Gauge,
+  Gavel,
+} from 'lucide-react';
 
 export function Header() {
   const links = [
@@ -23,6 +29,11 @@ export function Header() {
       to: '/profile',
       label: 'Profile',
       icon: LayoutDashboard,
+    },
+    {
+      to: '/arbiter',
+      label: 'Arbiter',
+      icon: Gavel,
     },
   ] as const;
 
