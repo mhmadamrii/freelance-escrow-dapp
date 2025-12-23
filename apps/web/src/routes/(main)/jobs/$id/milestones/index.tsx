@@ -202,6 +202,7 @@ function RouteComponent() {
                 <>
                   {item.status === 'PENDING' && (
                     <Button
+                      disabled={data.status !== 'FUNDED'}
                       onClick={() =>
                         updateStatus({
                           milestoneId: item.id,

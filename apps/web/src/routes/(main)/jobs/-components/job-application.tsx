@@ -67,7 +67,7 @@ export function JobApplication({
         </DialogTrigger>
         <DialogContent className='sm:max-w-xl'>
           <DialogHeader>
-            <DialogTitle>Apply</DialogTitle>
+            <DialogTitle>Cover Letter</DialogTitle>
             <DialogDescription>{jobDesc}</DialogDescription>
           </DialogHeader>
           <div className='grid gap-4'>
