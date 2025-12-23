@@ -1,12 +1,6 @@
-import { createRouter as createTanStackRouter } from '@tanstack/react-router';
 import Loader from './components/loader';
 import './index.css';
-import { routeTree } from './routeTree.gen';
-import {
-  QueryCache,
-  QueryClient,
-  QueryClientProvider,
-} from '@tanstack/react-query';
+
 import { createTRPCClient, httpBatchLink } from '@trpc/client';
 import { createTRPCOptionsProxy } from '@trpc/tanstack-react-query';
 import { toast } from 'sonner';
@@ -14,6 +8,13 @@ import type { AppRouter } from '@onwork/api/routers/index';
 import { TRPCProvider } from './utils/trpc';
 import { WagmiProvider } from 'wagmi';
 import { config } from './configs/wagmi';
+import { createRouter as createTanStackRouter } from '@tanstack/react-router';
+import { routeTree } from './routeTree.gen';
+import {
+  QueryCache,
+  QueryClient,
+  QueryClientProvider,
+} from '@tanstack/react-query';
 
 export const queryClient = new QueryClient({
   queryCache: new QueryCache({

@@ -61,12 +61,6 @@ function RouteComponent() {
     }),
   );
 
-  useEffect(() => {
-    if (currentUser && address && !currentUser.walletAddress) {
-      linkWallet({ walletAddress: address });
-    }
-  }, [currentUser, address, linkWallet]);
-
   const { mutate: applyAsFreelancer, isPending: isApplying } = useMutation(
     trpc.user.applyAsFreelancer.mutationOptions({
       onSuccess: () => {
@@ -113,9 +107,14 @@ function RouteComponent() {
     return reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length;
   }, [reviews]);
 
+  useEffect(() => {
+    if (currentUser && address && !currentUser.walletAddress) {
+      linkWallet({ walletAddress: address });
+    }
+  }, [currentUser, address, linkWallet]);
+
   return (
     <div className='max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8'>
-      {/* Header Section */}
       <div className='flex flex-col md:flex-row gap-6 items-start md:items-center justify-between'>
         <div className='flex items-center gap-4'>
           <Avatar className='h-20 w-20 border-2 border-primary/10'>
@@ -153,8 +152,6 @@ function RouteComponent() {
           </Button>
         </div>
       </div>
-
-      {/* Stats Grid */}
       <div className='grid gap-4 md:grid-cols-4'>
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>

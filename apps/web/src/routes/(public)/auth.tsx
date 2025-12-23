@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { motion } from 'motion/react';
-import { Briefcase, Lock, Mail, User, Wallet } from 'lucide-react';
+import { Briefcase, Lock, Mail, User, Wallet, Users } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,14 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { authClient } from '@/lib/auth-client';
 import { queryClient } from '@/router';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+
 import {
   createFileRoute,
   Link,
@@ -29,14 +37,17 @@ export const Route = createFileRoute('/(public)/auth')({
 
 function RouteComponent() {
   const navigate = useNavigate();
+
   const { refetch, data: session } = authClient.useSession();
-  console.log('session', session);
+  console.log('__', session);
   const [isLoading, setIsLoading] = useState(false);
   const [signUpData, setSignUpData] = useState({
     name: '',
     email: '',
     password: '',
+    role: 'CLIENT',
   });
+
   const [signInData, setSignInData] = useState({
     email: '',
     password: '',
@@ -47,20 +58,21 @@ function RouteComponent() {
       toast.error('Please fill in all fields');
       return;
     }
-
     setIsLoading(true);
     authClient.signUp.email(
       {
         name: signUpData.name,
         email: signUpData.email,
         password: signUpData.password,
+        role: signUpData.role,
       },
       {
         onError(error) {
           toast.error(error.error?.message || 'Sign up failed');
           setIsLoading(false);
         },
-        onSuccess() {
+        onSuccess(res) {
+          console.log('res', res);
           queryClient.refetchQueries();
           toast.success("You're signed up successfully!");
           refetch();
@@ -94,6 +106,7 @@ function RouteComponent() {
         onSuccess() {
           toast.success("You're signed in successfully!");
           refetch();
+          queryClient.refetchQueries();
           setIsLoading(false);
           navigate({ to: '/dashboard' });
         },
@@ -107,7 +120,6 @@ function RouteComponent() {
   return (
     <div className='min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4'>
       <div className='w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center'>
-        {/* Left Side - Branding */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -298,6 +310,39 @@ function RouteComponent() {
                         onKeyDown={(e) => e.key === 'Enter' && handleSignUp()}
                       />
                     </div>
+                  </div>
+                  <div className='space-y-2'>
+                    <Label htmlFor='signup-role'>I want to join as a</Label>
+                    <Select
+                      value={signUpData.role}
+                      onValueChange={(value) =>
+                        setSignUpData({ ...signUpData, role: value })
+                      }
+                    >
+                      <SelectTrigger id='signup-role' className='w-full'>
+                        <SelectValue placeholder='Select your role' />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value='CLIENT'>
+                          <div className='flex items-center gap-2'>
+                            <User className='h-4 w-4' />
+                            <span>Client (Hiring)</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value='FREELANCER'>
+                          <div className='flex items-center gap-2'>
+                            <Briefcase className='h-4 w-4' />
+                            <span>Freelancer (Working)</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value='BOTH'>
+                          <div className='flex items-center gap-2'>
+                            <Users className='h-4 w-4' />
+                            <span>Both</span>
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <Button
                     onClick={handleSignUp}
