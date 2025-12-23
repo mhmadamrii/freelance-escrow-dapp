@@ -1,13 +1,13 @@
 import { Link } from '@tanstack/react-router';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { Briefcase, Search, LayoutDashboard, ShieldCheck } from 'lucide-react';
+import { Search, LayoutDashboard, ShieldCheck, Gauge } from 'lucide-react';
 
 export function Header() {
   const links = [
     {
       to: '/dashboard',
       label: 'Dashboard',
-      icon: null,
+      icon: Gauge,
     },
     {
       to: '/jobs',
@@ -15,9 +15,9 @@ export function Header() {
       icon: Search,
     },
     {
-      to: '/jobs/create',
-      label: 'Post a Job',
-      icon: Briefcase,
+      to: '/explorer',
+      label: 'Explorer',
+      icon: Search,
     },
     {
       to: '/profile',
