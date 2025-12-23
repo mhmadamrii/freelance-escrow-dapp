@@ -1,6 +1,11 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { formatEther } from 'viem';
-import { shortenAddress } from '@/lib/utils';
+import { shortenAddress, shortenAmount } from '@/lib/utils';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { useAccount, useDisconnect } from 'wagmi';
@@ -109,7 +114,7 @@ function RouteComponent() {
   }, [reviews]);
 
   return (
-    <div className='container mx-auto max-w-7xl py-8 space-y-8'>
+    <div className='max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8'>
       {/* Header Section */}
       <div className='flex flex-col md:flex-row gap-6 items-start md:items-center justify-between'>
         <div className='flex items-center gap-4'>
@@ -159,9 +164,27 @@ function RouteComponent() {
             <Wallet className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>
-              {formatEther(BigInt(currentUser?.totalEarned?.toString() || '0'))}{' '}
-              ETH
+            <div className='flex items-baseline gap-1 overflow-hidden'>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className='text-2xl font-bold cursor-help'>
+                    {shortenAmount(
+                      formatEther(
+                        BigInt(currentUser?.totalEarned?.toString() || '0'),
+                      ),
+                    )}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {formatEther(
+                    BigInt(currentUser?.totalEarned?.toString() || '0'),
+                  )}{' '}
+                  ETH
+                </TooltipContent>
+              </Tooltip>
+              <span className='text-sm font-medium text-muted-foreground shrink-0'>
+                ETH
+              </span>
             </div>
             <p className='text-xs text-muted-foreground'>
               Lifetime earnings as freelancer
@@ -174,9 +197,27 @@ function RouteComponent() {
             <Wallet className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>
-              {formatEther(BigInt(currentUser?.totalSpent?.toString() || '0'))}{' '}
-              ETH
+            <div className='flex items-baseline gap-1 overflow-hidden'>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className='text-2xl font-bold cursor-help'>
+                    {shortenAmount(
+                      formatEther(
+                        BigInt(currentUser?.totalSpent?.toString() || '0'),
+                      ),
+                    )}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {formatEther(
+                    BigInt(currentUser?.totalSpent?.toString() || '0'),
+                  )}{' '}
+                  ETH
+                </TooltipContent>
+              </Tooltip>
+              <span className='text-sm font-medium text-muted-foreground shrink-0'>
+                ETH
+              </span>
             </div>
             <p className='text-xs text-muted-foreground'>
               Lifetime spent as client
@@ -242,9 +283,22 @@ function RouteComponent() {
               <CardContent>
                 <div className='flex items-center justify-between text-sm'>
                   <div className='flex items-center gap-4 text-muted-foreground'>
-                    <span className='flex items-center gap-1'>
-                      <Wallet className='h-3 w-3' />{' '}
-                      {formatEther(BigInt(job.totalAmount))} ETH
+                    <span className='flex items-center gap-1 overflow-hidden'>
+                      <Wallet className='h-3 w-3 shrink-0' />{' '}
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className='cursor-help'>
+                            {shortenAmount(
+                              formatEther(BigInt(job.totalAmount)),
+                              8,
+                            )}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {formatEther(BigInt(job.totalAmount))} ETH
+                        </TooltipContent>
+                      </Tooltip>
+                      <span className='shrink-0'>ETH</span>
                     </span>
                     <span className='flex items-center gap-1'>
                       <Briefcase className='h-3 w-3' /> {job.milestones.length}{' '}
@@ -290,9 +344,22 @@ function RouteComponent() {
                 <CardContent>
                   <div className='flex items-center justify-between text-sm'>
                     <div className='flex items-center gap-4 text-muted-foreground'>
-                      <span className='flex items-center gap-1'>
-                        <Wallet className='h-3 w-3' />{' '}
-                        {formatEther(BigInt(job.totalAmount))} ETH
+                      <span className='flex items-center gap-1 overflow-hidden'>
+                        <Wallet className='h-3 w-3 shrink-0' />{' '}
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className='cursor-help'>
+                              {shortenAmount(
+                                formatEther(BigInt(job.totalAmount)),
+                                8,
+                              )}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {formatEther(BigInt(job.totalAmount))} ETH
+                          </TooltipContent>
+                        </Tooltip>
+                        <span className='shrink-0'>ETH</span>
                       </span>
                       <span className='flex items-center gap-1'>
                         <CheckCircle2 className='h-3 w-3' />{' '}

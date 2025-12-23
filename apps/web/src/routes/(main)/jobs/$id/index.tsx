@@ -64,7 +64,7 @@ function RouteComponent() {
   );
 
   return (
-    <div className='container mx-auto max-w-6xl px-4 py-8'>
+    <div className='max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8'>
       {!job && (
         <div className='flex h-[50vh] flex-col items-center justify-center gap-4'>
           <h2 className='text-2xl font-bold text-muted-foreground'>
@@ -99,9 +99,7 @@ function RouteComponent() {
               <span>/</span>
               <span className='truncate max-w-50'>{job?.id}</span>
             </div>
-            <h1 className='text-4xl font-extrabold tracking-tight lg:text-5xl'>
-              {job?.title}
-            </h1>
+            <h1 className='text-3xl font-bold tracking-tight'>{job?.title}</h1>
             <div className='flex flex-wrap items-center gap-4'>
               <StatusBadge status={job?.status as string} />
               <div className='flex items-center gap-1 text-sm text-muted-foreground'>

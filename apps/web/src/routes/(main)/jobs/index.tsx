@@ -44,11 +44,11 @@ function RouteComponent() {
   );
 
   return (
-    <div className='min-h-screen py-12 bg-linear-to-b from-background to-muted/20'>
-      <div className='max-w-7xl mx-auto'>
-        <div className='flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12'>
+    <div className='min-h-screen bg-linear-to-b from-background to-muted/20'>
+      <div className='max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8'>
+        <div className='flex flex-col md:flex-row md:items-center justify-between gap-6'>
           <div>
-            <h1 className='text-4xl font-extrabold tracking-tight lg:text-5xl mb-3'>
+            <h1 className='text-3xl font-bold tracking-tight'>
               Available Opportunities
             </h1>
             <p className='text-muted-foreground text-lg max-w-2xl'>

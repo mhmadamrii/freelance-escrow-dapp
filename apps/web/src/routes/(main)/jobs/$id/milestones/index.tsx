@@ -125,7 +125,7 @@ function RouteComponent() {
   }, [isTxSuccess, activeMilestoneId, data]);
 
   return (
-    <div className='container mx-auto max-w-6xl px-4 py-8 flex flex-col gap-6'>
+    <div className='max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8'>
       {data?.status == 'DISPUTED' ? (
         <div>
           <Alert variant='destructive'>
@@ -138,7 +138,7 @@ function RouteComponent() {
         </div>
       ) : (
         <div className='flex w-full justify-between items-center'>
-          <h1 className='text-2xl font-bold'>Job Milestones</h1>
+          <h1 className='text-3xl font-bold tracking-tight'>Job Milestones</h1>
           <RaiseDispute
             jobId={id}
             onChainJobId={Number(data?.onChainId ?? 0)}
