@@ -13,6 +13,7 @@ export const milestoneRouter = {
           z.object({
             amount: z.string(), // wei
             descriptionHash: z.string(), // bytes32
+            description: z.string(),
           }),
         ),
       }),
@@ -24,6 +25,7 @@ export const milestoneRouter = {
           onChainIndex: index,
           amount: m.amount,
           descriptionHash: m.descriptionHash,
+          description: m.description,
         })),
         skipDuplicates: true, // protects against replays / retries
       });

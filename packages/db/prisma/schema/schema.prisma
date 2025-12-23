@@ -85,12 +85,11 @@ model Milestone {
   onChainIndex    Int
   amount          Decimal         @db.Decimal(38, 0)
   descriptionHash String
+  description     String?
   submissionHash  String?
   status          MilestoneStatus @default(PENDING)
-
-  job Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
+  job             Job             @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  createdAt       DateTime        @default(now())
 
   @@unique([jobId, onChainIndex])
   @@index([jobId])

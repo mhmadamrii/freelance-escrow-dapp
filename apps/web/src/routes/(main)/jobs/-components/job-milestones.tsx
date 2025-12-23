@@ -12,6 +12,9 @@ export function JobMilestones({ job }: { job: JobByIdOutput | undefined }) {
       <CardContent className='p-6 flex items-center justify-between gap-4'>
         <div className='space-y-1'>
           <h3 className='font-semibold'>Milestone {index + 1}</h3>
+          <h4 className='text-sm text-muted-foreground truncate max-w-md'>
+            {milestone.description}
+          </h4>
           <p className='text-sm text-muted-foreground truncate max-w-md'>
             {milestone.descriptionHash}
           </p>

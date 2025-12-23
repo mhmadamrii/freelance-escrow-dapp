@@ -107,6 +107,7 @@ function RouteComponent() {
           jobId: res.id,
           milestones: milestones.map((m) => ({
             amount: m.amount,
+            description: m.description,
             descriptionHash: keccak256(
               encodePacked(['string'], [m.description]),
             ),
@@ -598,7 +599,6 @@ function RouteComponent() {
                     {description ||
                       'Your project description will appear here. Be clear and concise to attract the best talent.'}
                   </p>
-
                   <div className='grid grid-cols-2 gap-3'>
                     <div className='p-3 rounded-xl bg-primary/5 border border-primary/10'>
                       <p className='text-[10px] font-bold text-primary uppercase tracking-wider mb-1'>
