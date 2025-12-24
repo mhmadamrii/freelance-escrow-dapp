@@ -176,6 +176,7 @@ function RouteComponent() {
             </CardHeader>
 
             <CardContent className='space-y-2'>
+              <p>{item.description}</p>
               <p className='text-sm text-muted-foreground'>
                 Amount: {formatEther(BigInt(item.amount.toString()))} ETH
               </p>

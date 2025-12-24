@@ -1,13 +1,10 @@
+import abi from '@/lib/abi.json';
+
 import { createFileRoute } from '@tanstack/react-router';
+import { FREELANCE_ESCROW_ADDRESS, ARBITER_ADDRESS } from '@/lib/constants';
+import { motion } from 'motion/react';
 import { useTRPC } from '@/utils/trpc';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,13 +12,21 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { useState, useMemo } from 'react';
 import { formatEther, parseEther } from 'viem';
+
 import {
   useWriteContract,
   useWaitForTransactionReceipt,
   useAccount,
 } from 'wagmi';
-import { FREELANCE_ESCROW_ADDRESS, ARBITER_ADDRESS } from '@/lib/constants';
-import abi from '@/lib/abi.json';
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+
 import {
   AlertCircle,
   CheckCircle2,
@@ -32,15 +37,15 @@ import {
   Users,
   History,
 } from 'lucide-react';
-import { motion } from 'motion/react';
 
 export const Route = createFileRoute('/(main)/arbiter/')({
   component: ArbiterPage,
 });
 
 function ArbiterPage() {
-  const { address } = useAccount();
   const trpc = useTRPC();
+
+  const { address } = useAccount();
 
   const isArbiter = useMemo(() => {
     if (!address) return false;
@@ -49,6 +54,8 @@ function ArbiterPage() {
     );
   }, [address]);
 
+  console.log('isArbiter', isArbiter);
+
   const {
     data: disputedJobs,
     isLoading: isLoadingJobs,
@@ -56,6 +63,8 @@ function ArbiterPage() {
   } = useQuery(
     trpc.job.getArbiterJobs.queryOptions(undefined, { enabled: isArbiter }),
   );
+
+  console.log('disputedJobs', disputedJobs);
 
   const { data: stats, isLoading: isLoadingStats } = useQuery(
     trpc.job.getDisputeStats.queryOptions(undefined, { enabled: !isArbiter }),
@@ -309,7 +318,7 @@ function DisputeCard({
       return;
     }
 
-    if (!job.onChainId) {
+    if (job.onChainId == undefined) {
       toast.error('On-chain ID not found for this job');
       return;
     }
@@ -367,7 +376,7 @@ function DisputeCard({
                 Disputed
               </Badge>
               <span className='text-xs text-muted-foreground'>
-                ID: {job.onChainId}
+                ID on-chain: {job.onChainId}, job hash: {job.jobHash}
               </span>
             </div>
             <CardTitle className='text-xl'>{job.title}</CardTitle>
