@@ -14,6 +14,8 @@ import { format, formatDistanceToNow } from 'date-fns';
 import { motion } from 'motion/react';
 import { useAccount } from 'wagmi';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { toast } from 'sonner';
+import { useState } from 'react';
 
 import {
   Card,
@@ -35,6 +37,8 @@ import {
   TriangleAlert,
   User,
   Wallet,
+  Copy,
+  Check,
 } from 'lucide-react';
 import { BorderBeam } from '@/components/ui/border-beam';
 
@@ -47,6 +51,14 @@ function RouteComponent() {
 
   const { id } = Route.useParams();
   const { address } = useAccount();
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    toast.success('Job Hash copied to clipboard');
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const { data: job } = useQuery(
     trpc.job?.jobById.queryOptions({
@@ -252,6 +264,26 @@ function RouteComponent() {
                 <div className='flex items-center gap-1 text-primary hover:underline cursor-pointer'>
                   <ShieldCheck className='h-3 w-3' />
                   <span className='text-xs'>View on Explorer</span>
+                </div>
+              </div>
+              <div className='flex justify-between items-center py-2 border-b'>
+                <span className='text-sm text-muted-foreground'>Job Hash</span>
+                <div className='flex items-center gap-2'>
+                  <span className='font-mono text-xs text-muted-foreground'>
+                    {job?.jobHash ? `${job.jobHash.slice(0, 8)}...` : 'N/A'}
+                  </span>
+                  <Button
+                    variant='ghost'
+                    size='icon'
+                    className='h-6 w-6'
+                    onClick={() => job?.jobHash && handleCopy(job.jobHash)}
+                  >
+                    {copied ? (
+                      <Check className='h-3 w-3 text-green-500' />
+                    ) : (
+                      <Copy className='h-3 w-3' />
+                    )}
+                  </Button>
                 </div>
               </div>
               <div className='flex justify-between items-center py-2'>

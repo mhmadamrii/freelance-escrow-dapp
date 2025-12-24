@@ -297,6 +297,7 @@ export const jobRouter = router({
                       {
                         clientWallet: { contains: query, mode: 'insensitive' },
                       },
+                      { jobHash: { contains: query, mode: 'insensitive' } },
                     ],
                   }
                 : {},
@@ -316,6 +317,12 @@ export const jobRouter = router({
                 ? {
                     OR: [
                       { description: { contains: query, mode: 'insensitive' } },
+                      {
+                        descriptionHash: {
+                          contains: query,
+                          mode: 'insensitive',
+                        },
+                      },
                     ],
                   }
                 : {},

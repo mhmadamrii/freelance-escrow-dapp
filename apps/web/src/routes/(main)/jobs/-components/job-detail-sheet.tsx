@@ -28,7 +28,12 @@ import {
   User,
   CheckCircle2,
   Loader2,
+  Copy,
+  Check,
+  ShieldCheck,
 } from 'lucide-react';
+import { toast } from 'sonner';
+import { useState } from 'react';
 
 interface JobDetailSheetProps {
   jobId: string;
@@ -43,6 +48,14 @@ export function JobDetailSheet({
 }: JobDetailSheetProps) {
   const trpc = useTRPC();
   const navigate = useNavigate();
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    toast.success('Job Hash copied to clipboard');
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const { data: job, isLoading } = useQuery(
     trpc.job.jobById.queryOptions({ jobId }),
@@ -138,6 +151,28 @@ export function JobDetailSheet({
                     <span className='font-medium'>
                       {job.jobApplications.length} Applicants
                     </span>
+                  </div>
+                  <div className='flex items-center justify-between text-sm'>
+                    <span className='text-muted-foreground flex items-center gap-2'>
+                      <ShieldCheck className='h-4 w-4' /> Job Hash
+                    </span>
+                    <div className='flex items-center gap-2'>
+                      <span className='font-mono text-xs text-muted-foreground'>
+                        {job.jobHash.slice(0, 10)}...
+                      </span>
+                      <Button
+                        variant='ghost'
+                        size='icon'
+                        className='h-6 w-6'
+                        onClick={() => handleCopy(job.jobHash)}
+                      >
+                        {copied ? (
+                          <Check className='h-3 w-3 text-green-500' />
+                        ) : (
+                          <Copy className='h-3 w-3' />
+                        )}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>

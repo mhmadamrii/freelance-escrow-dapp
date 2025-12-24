@@ -1,7 +1,6 @@
 import { formatEther } from 'viem';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -124,7 +123,7 @@ function RouteComponent() {
             <div className='relative flex items-center bg-white/5 border border-white/10 backdrop-blur-xl rounded-2xl p-2'>
               <Search className='w-6 h-6 ml-4 text-white/40' />
               <input
-                placeholder='Search by job title, description, or wallet address...'
+                placeholder='Search by title, description, wallet, or hash...'
                 className='bg-transparent w-full border-none text-lg h-14  placeholder:text-white/20 focus:border-none'
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -384,33 +383,6 @@ function RouteComponent() {
             {/* Similar structure but filtered for milestones */}
           </TabsContent>
         </Tabs>
-      </div>
-
-      {/* Footer CTA */}
-      <div className='relative border-t border-white/10 bg-white/5 backdrop-blur-3xl py-20 overflow-hidden'>
-        <div className='absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-linear-to-r from-transparent via-primary/50 to-transparent' />
-        <div className='max-w-4xl mx-auto px-4 text-center space-y-8'>
-          <h2 className='text-4xl font-black'>Ready to Build the Future?</h2>
-          <p className='text-white/60 text-lg'>
-            Join thousands of developers and clients building the next
-            generation of trustless applications.
-          </p>
-          <div className='flex flex-wrap justify-center gap-4'>
-            <Button
-              size='lg'
-              className='h-14 px-10 rounded-2xl font-bold text-lg'
-            >
-              Post a Job
-            </Button>
-            <Button
-              size='lg'
-              variant='outline'
-              className='h-14 px-10 rounded-2xl font-bold text-lg bg-white/5 border-white/10'
-            >
-              Browse Developers
-            </Button>
-          </div>
-        </div>
       </div>
     </div>
   );

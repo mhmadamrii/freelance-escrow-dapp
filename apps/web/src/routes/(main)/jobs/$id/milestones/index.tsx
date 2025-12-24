@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react';
 import { FREELANCE_ESCROW_ADDRESS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { encodePacked, keccak256, formatEther } from 'viem';
-import { AlertCircleIcon, Loader2 } from 'lucide-react'; // Suggested for loading states
+import { AlertCircleIcon, Loader2, Copy, Check } from 'lucide-react'; // Suggested for loading states
 
 import {
   useAccount,
@@ -44,6 +44,14 @@ function RouteComponent() {
   const [activeMilestoneId, setActiveMilestoneId] = useState<string | null>(
     null,
   );
+  const [copiedHash, setCopiedHash] = useState<string | null>(null);
+
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedHash(text);
+    toast.success('Hash copied to clipboard');
+    setTimeout(() => setCopiedHash(null), 2000);
+  };
 
   const {
     data: hash,
@@ -180,9 +188,23 @@ function RouteComponent() {
               <p className='text-sm text-muted-foreground'>
                 Amount: {formatEther(BigInt(item.amount.toString()))} ETH
               </p>
-              <p className='text-xs truncate text-muted-foreground'>
-                Hash: {item.descriptionHash}
-              </p>
+              <div className='flex items-center gap-2'>
+                <p className='text-xs truncate text-muted-foreground'>
+                  Hash: {item.descriptionHash}
+                </p>
+                <Button
+                  variant='ghost'
+                  size='icon'
+                  className='h-6 w-6 shrink-0'
+                  onClick={() => handleCopy(item.descriptionHash)}
+                >
+                  {copiedHash === item.descriptionHash ? (
+                    <Check className='h-3 w-3 text-green-500' />
+                  ) : (
+                    <Copy className='h-3 w-3' />
+                  )}
+                </Button>
+              </div>
             </CardContent>
 
             <CardFooter className='flex gap-2'>
